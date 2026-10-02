@@ -17,3 +17,5 @@ static/uploads/
 # Training data (download with scripts/prepare_dataset.py)
 dataset/
 
+instance/
+*.db
