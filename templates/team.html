@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+{% block title %}CleanCity – Team Dashboard{% endblock %}
+{% block style %}
+  .container{max-width:980px;margin:0 auto;padding:20px 16px}
+
+  /* Stats */
+  .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
+  .stat-card{background:#fff;border-radius:12px;padding:14px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  .stat-card .num{font-size:26px;font-weight:700}
+  .stat-card .label{font-size:11px;color:var(--muted);margin-top:3px}
+  .total .num{color:var(--green)} .pending .num{color:var(--medium)} .progress .num{color:var(--blue)}
+  .done .num{color:var(--low)}    .danger .num{color:var(--high)}
+
+  /* Overview: garbage types + model info */
+  .overview{display:grid;grid-template-columns:3fr 2fr;gap:16px}
+  .type-row{display:flex;align-items:center;gap:10px;font-size:13px;margin-bottom:8px}
+  .type-row .name{width:110px;color:#444}
+  .type-row .bar-bg{flex:1}
+  .type-row .cnt{width:28px;text-align:right;font-weight:600}
+  .model-stat{font-size:13px;color:#444;line-height:1.7}
+  .model-stat b{color:var(--text)}
+  .acc{font-size:30px;font-weight:700;color:var(--green)}
+
+  /* Filters */
+  .toolbar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+  .filter-btn{padding:7px 16px;border-radius:20px;border:1px solid #c8e6d8;background:#fff;
+              cursor:pointer;font-size:13px;color:#444;transition:.2s}
+  .filter-btn.active{background:var(--green);color:#fff;border-color:var(--green)}
+  .filter-btn:not(.active):hover{background:#e8f7f2}
+  .search{margin-left:auto;padding:7px 14px;border-radius:20px;border:1px solid #c8e6d8;font-size:13px;min-width:200px}
+  .search:focus{outline:none;border-color:var(--green)}
+
+  /* Report card */
+  .report-card{background:#fff;border-radius:14px;padding:16px;margin-bottom:14px;
+               box-shadow:0 1px 4px rgba(0,0,0,.06);display:flex;gap:16px;
+               align-items:flex-start;border-left:4px solid #ddd}
+  .report-card.danger-High{border-left-color:var(--high)} .report-card.danger-Medium{border-left-color:var(--medium)}
+  .report-card.danger-Low{border-left-color:var(--low)}   .report-card.danger-None{border-left-color:#bbb}
+  .report-card.status-done,.report-card.status-rejected{opacity:.75}
+
+  .report-card .photo img{width:130px;height:130px;object-fit:cover;border-radius:10px;border:1px solid #e0e0e0;display:block}
+  .report-info{flex:1;min-width:0}
+  .report-id  {font-size:11px;color:#999;margin-bottom:3px}
+  .report-desc{font-size:14px;font-weight:600;margin-bottom:6px;overflow-wrap:anywhere}
+  .report-loc {font-size:12px;color:#555;margin-bottom:3px}
+  .report-time{font-size:11px;color:#aaa;margin-bottom:10px}
+
+  .badge{display:inline-block;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;margin:0 6px 8px 0}
+  .badge-pending{background:#fef3e2;color:#c0680a}  .badge-in_progress{background:#e3f0fb;color:#1a5f8a}
+  .badge-done{background:#e6f7ee;color:#1e7e4a}     .badge-rejected{background:#eee;color:#666}
+  .badge-unsure{background:#fff8e1;color:#7a5a00}
+
+  .ai-result{background:#f8f8f8;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px}
+  .ai-result-title{font-weight:600;color:#333;margin-bottom:6px;font-size:13px}
+  .ai-row{display:flex;justify-content:space-between;gap:12px;padding:2px 0}
+  .ai-label{color:#888}
+  .ai-value{font-weight:600;color:#222;text-align:right}
+  .ai-result .bar-bg{height:5px;margin:4px 0}
+
+  .actions{display:flex;gap:8px;flex-wrap:wrap}
+  .actions form{display:inline}
+  .action-btn{padding:7px 14px;border-radius:8px;font-size:13px;cursor:pointer;border:1px solid #ccc;
+              background:#fff;transition:.2s;text-decoration:none;display:inline-block;color:#444}
+  .btn-accept{border-color:var(--green);color:var(--green)} .btn-accept:hover{background:var(--green);color:#fff}
+  .btn-done{border-color:var(--low);color:var(--low)}       .btn-done:hover{background:var(--low);color:#fff}
+  .btn-map{border-color:var(--blue);color:var(--blue)}      .btn-map:hover{background:var(--blue);color:#fff}
+  .btn-reject:hover,.btn-reopen:hover{background:#eee}
+  .btn-delete{border-color:#e5b5b0;color:var(--high)}       .btn-delete:hover{background:var(--high);color:#fff}
+
+  .empty{text-align:center;padding:40px;color:#999;font-size:14px}
+
+  @media(max-width:760px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .stats .stat-card:first-child{grid-column:span 2}
+    .overview{grid-template-columns:1fr}
+    .report-card{flex-direction:column}
+    .report-card .photo,.report-card .photo img{width:100%}
+    .report-card .photo img{height:200px}
+    .search{margin-left:0;width:100%}
+  }
+{% endblock %}
+{% block body %}
+<div class="topbar dark">
+  <div>
+    <h1>🗑️ CleanCity – Team Dashboard</h1>
+    <p>AI-powered garbage management</p>
+  </div>
+  <div class="nav">
+    <a href="{{ url_for('user_home') }}">+ New Report</a>
+    <form method="POST" action="{{ url_for('team_logout') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit">Log out</button>
+    </form>
+  </div>
+</div>
+
+<div class="container">
+
+  {% for msg in get_flashed_messages() %}<div class="notice ok">{{ msg }}</div>{% endfor %}
+  {% if not model_trained %}
+  <div class="notice warn">⚠️ No trained AI model is loaded. New reports show type "Unknown" —
+    run <code>python train.py --data-dir dataset</code> and restart the app.</div>
+  {% endif %}
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat-card total"><div class="num">{{ total }}</div><div class="label">Total reports</div></div>
+    <div class="stat-card pending"><div class="num">{{ pending }}</div><div class="label">Pending</div></div>
+    <div class="stat-card progress"><div class="num">{{ in_progress }}</div><div class="label">In progress</div></div>
+    <div class="stat-card done"><div class="num">{{ done }}</div><div class="label">Resolved</div></div>
+    <div class="stat-card danger"><div class="num">{{ high_danger }}</div><div class="label">🚨 High danger open</div></div>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div class="overview">
+    <div class="card">
+      <div class="card-title">♻️ Garbage types reported</div>
+      {% set max_count = (type_counts | map(attribute=1) | max) if type_counts else 1 %}
+      {% for name, count in type_counts %}
+      <div class="type-row">
+        <span class="name">{{ name }}</span>
+        <div class="bar-bg"><div class="bar" style="width:{{ (count / max_count * 100) | round(1) }}%"></div></div>
+        <span class="cnt">{{ count }}</span>
+      </div>
+      {% else %}
+      <div style="font-size:13px;color:#999">No reports yet.</div>
+      {% endfor %}
+    </div>
+    <div class="card">
+      <div class="card-title">🤖 CNN model</div>
+      {% if model_trained and model_info %}
+        <div class="acc">{{ model_info.val_accuracy }}%</div>
+        <div class="model-stat">
+          validation accuracy on <b>{{ model_info.validation_images }}</b> unseen photos<br>
+          Trained on <b>{{ model_info.train_images }}</b> photos · {{ model_info.trained_at }}<br>
+          MobileNetV2 transfer learning · 7 classes
+        </div>
+      {% elif model_trained %}
+        <div class="model-stat">Trained model loaded.</div>
+      {% else %}
+        <div class="model-stat">Not trained yet.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="toolbar">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="pending">Pending</button>
+    <button class="filter-btn" data-filter="in_progress">In progress</button>
+    <button class="filter-btn" data-filter="done">Done</button>
+    <button class="filter-btn" data-filter="rejected">Rejected</button>
+    <button class="filter-btn" data-filter="high">🚨 High danger</button>
+    <input class="search" id="search" type="search" placeholder="🔎 Search description or type...">
+  </div>
+
+  <!-- REPORT CARDS -->
+  {% for r in reports %}
+  {% set ai = r.ai_result %}
+  <div class="report-card danger-{{ ai.get('danger_level','None') }} status-{{ r.status }}"
+       data-status="{{ r.status }}"
+       data-danger="{{ ai.get('danger_level','None') }}"
+       data-text="{{ (r.description ~ ' ' ~ ai.get('garbage_type','')) | lower }}">
+
+    <a class="photo" href="{{ url_for('static', filename='uploads/' ~ r.photo) }}" target="_blank" title="Open full photo">
+      <img src="{{ url_for('static', filename='uploads/' ~ r.photo) }}" alt="Garbage photo" loading="lazy">
+    </a>
+
+    <div class="report-info">
+      <div class="report-id">Report #{{ r.id }}</div>
+      <div class="report-desc">{{ r.description }}</div>
+      <div class="report-loc">📍 {{ r.address }}</div>
+      <div class="report-time">
+        🕐 {{ r.submitted_at }}{% if r.updated_at %} | Updated: {{ r.updated_at }}{% endif %}
+      </div>
+
+      <span class="badge badge-{{ r.status }}">{{ status_labels.get(r.status, r.status) }}</span>
+      {% if ai.get('uncertain') %}<span class="badge badge-unsure">🤔 AI unsure — check photo</span>{% endif %}
+
+      {% if ai %}
+      <div class="ai-result">
+        <div class="ai-result-title">🤖 CNN Analysis</div>
+        <div class="ai-row"><span class="ai-label">Type</span><span class="ai-value">{{ ai.get('garbage_type','—') }}</span></div>
+        <div class="ai-row"><span class="ai-label">Confidence</span><span class="ai-value">{{ ai.get('confidence','—') }}%</span></div>
+        <div class="bar-bg"><div class="bar{% if ai.get('uncertain') %} weak{% endif %}" style="width:{{ ai.get('confidence',0) }}%"></div></div>
+        <div class="ai-row">
+          <span class="ai-label">Danger</span>
+          <span class="ai-value danger-{{ ai.get('danger_level','None') }}">{{ ai.get('danger_level','—') }}</span>
+        </div>
+        <div class="ai-row">
+          <span class="ai-label">Action</span>
+          <span class="ai-value" style="max-width:65%;font-size:11px">{{ ai.get('recommended_action','—') }}</span>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="actions">
+        {% macro status_form(status, label, cls) %}
+        <form method="POST" action="{{ url_for('update_status') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="report_id" value="{{ r.id }}">
+          <input type="hidden" name="status" value="{{ status }}">
+          <button type="submit" class="action-btn {{ cls }}">{{ label }}</button>
+        </form>
+        {% endmacro %}
+
+        {% if r.status == 'pending' %}
+          {{ status_form('in_progress', '✅ Accept', 'btn-accept') }}
+          {{ status_form('rejected', '✖ Reject', 'btn-reject') }}
+        {% elif r.status == 'in_progress' %}
+          {{ status_form('done', '✔ Mark done', 'btn-done') }}
+        {% else %}
+          {{ status_form('pending', '↺ Reopen', 'btn-reopen') }}
+        {% endif %}
+
+        <a class="action-btn btn-map" href="https://www.google.com/maps?q={{ r.latitude }},{{ r.longitude }}"
+           target="_blank" rel="noopener">🗺 View on map</a>
+
+        <form method="POST" action="{{ url_for('delete_report') }}"
+              onsubmit="return confirm('Delete report #{{ r.id }} and its photo? This cannot be undone.')">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="report_id" value="{{ r.id }}">
+          <button type="submit" class="action-btn btn-delete">🗑 Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="empty">📭 No reports yet. Ask users to start reporting!</div>
+  {% endfor %}
+  <div class="empty" id="no-match" style="display:none">No reports match this filter.</div>
+
+</div>
+
+<script>
+  let currentFilter = 'all';
+
+  function applyFilters(){
+    const q = document.getElementById('search').value.trim().toLowerCase();
+    let visible = 0;
+    document.querySelectorAll('.report-card').forEach(card => {
+      const {status, danger, text} = card.dataset;
+      let ok = currentFilter === 'all'
+            || (currentFilter === 'high' ? danger === 'High' && (status === 'pending' || status === 'in_progress')
+                                         : status === currentFilter);
+      if(q && !text.includes(q)) ok = false;
+      card.style.display = ok ? 'flex' : 'none';
+      if(ok) visible++;
+    });
+    document.getElementById('no-match').style.display =
+      (visible === 0 && document.querySelectorAll('.report-card').length) ? 'block' : 'none';
+  }
+
+  document.querySelectorAll('.filter-btn').forEach(btn => btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    applyFilters();
+  }));
+  document.getElementById('search').addEventListener('input', applyFilters);
+</script>
+{% endblock %}

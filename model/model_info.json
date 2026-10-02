@@ -1,0 +1,90 @@
+{
+  "trained_at": "2026-10-02 13:10",
+  "architecture": "MobileNetV2 (ImageNet) + Dense(128) + Dropout(0.3) + Dense(7)",
+  "classes": [
+    "Cardboard",
+    "Glass",
+    "Metal",
+    "Organic Waste",
+    "Paper",
+    "Plastic",
+    "Not Garbage"
+  ],
+  "train_images": 4900,
+  "validation_images": 1225,
+  "val_accuracy": 94.6,
+  "per_class_accuracy": {
+    "Cardboard": 94.3,
+    "Glass": 88.9,
+    "Metal": 94.9,
+    "Organic Waste": 97.1,
+    "Paper": 96.4,
+    "Plastic": 88.9,
+    "Not Garbage": 100.0
+  },
+  "confusion_matrix": [
+    [
+      149,
+      1,
+      1,
+      0,
+      6,
+      1,
+      0
+    ],
+    [
+      0,
+      144,
+      3,
+      0,
+      1,
+      13,
+      1
+    ],
+    [
+      2,
+      2,
+      149,
+      0,
+      2,
+      2,
+      0
+    ],
+    [
+      1,
+      2,
+      1,
+      204,
+      1,
+      0,
+      1
+    ],
+    [
+      2,
+      0,
+      0,
+      2,
+      163,
+      2,
+      0
+    ],
+    [
+      0,
+      7,
+      6,
+      0,
+      6,
+      152,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      198
+    ]
+  ]
+}

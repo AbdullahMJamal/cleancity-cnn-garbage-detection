@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+{% block title %}CleanCity – Report Garbage{% endblock %}
+{% block style %}
+  .container{max-width:540px;margin:0 auto;padding:20px 16px}
+
+  /* Upload */
+  .upload-zone{border:2px dashed #a8d8c5;border-radius:10px;padding:28px;
+               text-align:center;cursor:pointer;transition:.2s;position:relative}
+  .upload-zone:hover,.upload-zone.drag{border-color:var(--green);background:var(--green-soft)}
+  .upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+  .upload-zone .icon{font-size:38px}
+  .upload-zone p{font-size:13px;color:var(--muted);margin-top:6px}
+  .upload-zone small{font-size:11px;color:#999}
+  #photo-preview{width:100%;max-height:260px;object-fit:cover;border-radius:10px;margin-top:12px;display:none}
+
+  /* Location */
+  .loc-box{background:var(--green-soft);border:1px solid var(--green-line);border-radius:10px;
+           padding:12px 14px;font-size:13px;color:#333}
+  .loc-coords{font-size:12px;color:var(--green);margin-top:4px}
+
+  textarea{width:100%;padding:10px 14px;border-radius:10px;border:1px solid #ddd;
+           font-size:14px;resize:none;color:#333}
+  textarea:focus{outline:none;border-color:var(--green)}
+  .counter{font-size:11px;color:#999;text-align:right;margin-top:4px}
+
+  .submit-btn{width:100%;padding:14px;font-size:16px}
+
+  /* AI Result Box */
+  .ai-box{border-radius:12px;padding:16px;margin-bottom:16px;display:none}
+  .ai-box.garbage{background:#fff8e1;border:1px solid #ffd54f}
+  .ai-box.not-garbage{background:#e8f5e9;border:1px solid #a5d6a7}
+  .ai-box h3{font-size:15px;font-weight:600;margin-bottom:10px}
+  .ai-row{display:flex;justify-content:space-between;gap:12px;font-size:13px;
+          padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)}
+  .ai-row:last-child{border-bottom:none}
+  .ai-label{color:var(--muted)}
+  .ai-value{font-weight:600;color:#222;text-align:right}
+  .ai-box .bar-bg{margin-top:8px}
+  .uncertain{font-size:12px;color:#7a5a00;margin-top:8px;display:none}
+
+  /* All predictions */
+  .preds-title{margin-top:12px;font-size:12px;color:#888;font-weight:600}
+  .pred-row{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:12px}
+  .pred-label{width:100px;color:#555}
+  .pred-row .bar-bg{flex:1;height:6px;margin:0}
+  .pred-pct{width:44px;text-align:right;color:#333;font-weight:600}
+
+  #success-box,#error-box,#loading-box{display:none}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid #90caf9;border-top-color:#1565c0;
+           border-radius:50%;animation:spin .8s linear infinite;vertical-align:-2px;margin-right:6px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+{% endblock %}
+{% block body %}
+<div class="topbar">
+  <div>
+    <h1>🗑️ CleanCity</h1>
+    <p>AI-powered garbage reporting</p>
+  </div>
+  <div class="nav"><a href="{{ url_for('team_dashboard') }}">Team Dashboard →</a></div>
+</div>
+
+<div class="container">
+
+  {% if not model_trained %}
+  <div class="notice warn">⚠️ The AI model is not loaded yet. Your report will still reach the team,
+    who will check the photo manually.</div>
+  {% endif %}
+
+  <div class="notice ok"   id="success-box"></div>
+  <div class="notice err"  id="error-box"></div>
+  <div class="notice info" id="loading-box"><span class="spinner"></span>CNN is analyzing your photo... please wait</div>
+
+  <!-- AI RESULT (shown after submit) -->
+  <div class="ai-box" id="ai-box">
+    <h3 id="ai-title">🤖 AI Analysis Result</h3>
+    <div class="ai-row"><span class="ai-label">Detected</span><span class="ai-value" id="ai-type">—</span></div>
+    <div class="ai-row"><span class="ai-label">Confidence</span><span class="ai-value" id="ai-confidence">—</span></div>
+    <div class="bar-bg"><div class="bar" id="ai-conf-bar" style="width:0%"></div></div>
+    <div class="uncertain" id="ai-uncertain">🤔 The AI is not very sure about this one — the team will double-check the photo.</div>
+    <div class="ai-row" style="margin-top:8px"><span class="ai-label">Danger level</span><span class="ai-value" id="ai-danger">—</span></div>
+    <div class="ai-row"><span class="ai-label">Action</span><span class="ai-value" id="ai-action" style="max-width:60%">—</span></div>
+    <div id="preds-wrap">
+      <div class="preds-title">All class scores:</div>
+      <div id="all-preds"></div>
+    </div>
+  </div>
+
+  <!-- PHOTO -->
+  <div class="card">
+    <div class="card-title">📷 Upload photo of garbage</div>
+    <div class="upload-zone" id="upload-zone">
+      <input type="file" id="photo-input" accept="image/png,image/jpeg,image/gif,image/webp">
+      <div class="icon">📸</div>
+      <p id="upload-text">Tap to take a photo or choose from gallery</p>
+      <small>PNG, JPG, GIF or WEBP · max 16MB</small>
+    </div>
+    <img id="photo-preview" alt="Preview">
+  </div>
+
+  <!-- LOCATION (fixed: reports are for the campus) -->
+  <div class="card">
+    <div class="card-title">📍 Location</div>
+    <div class="loc-box">
+      <div>📍 {{ campus.address }}</div>
+      <div class="loc-coords">Coordinates: {{ campus.latitude }}, {{ campus.longitude }}</div>
+    </div>
+  </div>
+
+  <!-- DESCRIPTION -->
+  <div class="card">
+    <div class="card-title">📝 Description (optional)</div>
+    <textarea id="description" rows="3" maxlength="500"
+      placeholder="e.g. Large pile of garbage near the main gate..."></textarea>
+    <div class="counter"><span id="desc-count">0</span>/500</div>
+  </div>
+
+  <button class="btn submit-btn" id="submit-btn" disabled>🤖 Analyze & Submit Report</button>
+
+</div>
+
+<script>
+  const MAX_SIZE = 16 * 1024 * 1024;
+  const $ = id => document.getElementById(id);
+  let photoFile = null;
+
+  function show(id, text){ const el=$(id); if(text!==undefined) el.textContent=text; el.style.display='block'; }
+  function hide(...ids){ ids.forEach(id => $(id).style.display='none'); }
+
+  // ── Photo selection (click or drag & drop) ─────────────────────────────────
+  function setPhoto(file){
+    hide('error-box');
+    if(!file) return;
+    if(!file.type.startsWith('image/')){ show('error-box','❌ Please choose an image file.'); return; }
+    if(file.size > MAX_SIZE){ show('error-box','❌ Photo is too large (max 16MB).'); return; }
+    photoFile = file;
+    $('upload-text').textContent = '✅ ' + file.name + ' — tap to change';
+    const img = $('photo-preview');
+    img.src = URL.createObjectURL(file);
+    img.style.display = 'block';
+    $('submit-btn').disabled = false;
+  }
+  $('photo-input').addEventListener('change', e => setPhoto(e.target.files[0]));
+  const zone = $('upload-zone');
+  ['dragenter','dragover'].forEach(ev => zone.addEventListener(ev, e => { e.preventDefault(); zone.classList.add('drag'); }));
+  ['dragleave','drop'].forEach(ev => zone.addEventListener(ev, () => zone.classList.remove('drag')));
+  zone.addEventListener('drop', e => { e.preventDefault(); setPhoto(e.dataTransfer.files[0]); });
+
+  $('description').addEventListener('input', e => $('desc-count').textContent = e.target.value.length);
+
+  // ── Submit ─────────────────────────────────────────────────────────────────
+  $('submit-btn').addEventListener('click', async () => {
+    const btn = $('submit-btn');
+    btn.disabled = true; btn.textContent = '⏳ Submitting...';
+    hide('ai-box','success-box','error-box'); show('loading-box');
+
+    const fd = new FormData();
+    fd.append('photo', photoFile);
+    fd.append('description', $('description').value);
+
+    try {
+      const res  = await fetch('{{ url_for("submit_report") }}', {method:'POST', body:fd});
+      const data = await res.json();
+      if(data.success){
+        showAIResult(data.ai_result);
+        show('success-box', `✅ Report #${data.report_id} submitted! The team has been notified.`);
+        resetForm();
+      } else {
+        show('error-box', '❌ ' + (data.error || 'Something went wrong'));
+      }
+    } catch(err) {
+      show('error-box', '❌ Network error. Check your connection and try again.');
+    } finally {
+      hide('loading-box');
+      btn.textContent = '🤖 Analyze & Submit Report';
+      btn.disabled = !photoFile;
+    }
+  });
+
+  function resetForm(){
+    photoFile = null;
+    $('photo-input').value = '';
+    $('photo-preview').style.display = 'none';
+    $('upload-text').textContent = 'Tap to take a photo or choose from gallery';
+    $('description').value = ''; $('desc-count').textContent = '0';
+  }
+
+  function showAIResult(r){
+    const box = $('ai-box');
+    box.className = 'ai-box ' + (r.is_garbage ? 'garbage' : 'not-garbage');
+    box.style.display = 'block';
+    $('ai-title').textContent = r.garbage_type === 'Unknown' ? '📋 Report received'
+                              : r.is_garbage ? '🚨 Garbage Detected!' : '✅ No Garbage Detected';
+    $('ai-type').textContent = r.garbage_type;
+    $('ai-confidence').textContent = r.confidence + '%';
+    $('ai-conf-bar').style.width = r.confidence + '%';
+    $('ai-conf-bar').className = 'bar' + (r.uncertain ? ' weak' : '');
+    $('ai-uncertain').style.display = (r.uncertain && r.garbage_type !== 'Unknown') ? 'block' : 'none';
+
+    $('ai-danger').textContent = r.danger_level;
+    $('ai-danger').className = 'ai-value danger-' + r.danger_level;
+    $('ai-action').textContent = r.recommended_action;
+
+    // All predictions bar chart (built with DOM methods — safe from HTML injection)
+    const list = $('all-preds');
+    list.replaceChildren();
+    const preds = Object.entries(r.all_predictions || {}).sort((a,b) => b[1]-a[1]);
+    $('preds-wrap').style.display = preds.length ? 'block' : 'none';
+    preds.forEach(([cls, pct]) => {
+      const row = document.createElement('div'); row.className = 'pred-row';
+      const label = document.createElement('span'); label.className = 'pred-label'; label.textContent = cls;
+      const bg = document.createElement('div'); bg.className = 'bar-bg';
+      const bar = document.createElement('div'); bar.className = 'bar'; bar.style.width = pct + '%';
+      const val = document.createElement('span'); val.className = 'pred-pct'; val.textContent = pct + '%';
+      bg.append(bar); row.append(label, bg, val); list.append(row);
+    });
+    box.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+</script>
+{% endblock %}

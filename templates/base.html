@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}CleanCity{% endblock %}</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗑️</text></svg>">
+  <style>
+    :root{
+      --green:#1D9E75; --green-dark:#0F6E56; --green-soft:#f0faf6; --green-line:#b8e0cf;
+      --bg:#f0f7f4; --card:#fff; --text:#1a1a1a; --muted:#666;
+      --high:#c0392b; --medium:#e67e22; --low:#27ae60; --none:#999; --blue:#2980b9;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    button,input,textarea,select{font-family:inherit}
+
+    .topbar{background:var(--green);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .topbar.dark{background:var(--green-dark)}
+    .topbar h1{font-size:18px;font-weight:600}
+    .topbar p{font-size:12px;opacity:.85}
+    .topbar .nav{margin-left:auto;display:flex;gap:8px;align-items:center}
+    .topbar .nav a,.topbar .nav button{background:rgba(255,255,255,.2);color:#fff;border:none;cursor:pointer;
+      text-decoration:none;padding:6px 14px;border-radius:8px;font-size:13px}
+    .topbar .nav a:hover,.topbar .nav button:hover{background:rgba(255,255,255,.35)}
+
+    .card{background:var(--card);border-radius:14px;padding:18px;margin-bottom:16px;box-shadow:0 1px 6px rgba(0,0,0,.07)}
+    .card-title{font-size:14px;font-weight:600;color:var(--green);margin-bottom:12px}
+
+    .notice{border-radius:12px;padding:12px 14px;font-size:13px;margin-bottom:14px}
+    .notice.info{background:#e3f2fd;border:1px solid #90caf9;color:#1565c0}
+    .notice.warn{background:#fff8e1;border:1px solid #ffd54f;color:#7a5a00}
+    .notice.ok{background:#d4edda;border:1px solid #a0d9b4;color:#2d6a4f}
+    .notice.err{background:#fdecea;border:1px solid #f0b3ad;color:#a02020}
+
+    .btn{padding:12px 16px;background:var(--green);color:#fff;border:none;border-radius:12px;
+         font-size:15px;font-weight:600;cursor:pointer;transition:.2s}
+    .btn:hover{background:var(--green-dark)}
+    .btn:disabled{background:#b0cfc6;cursor:not-allowed}
+
+    .danger-High{color:var(--high)} .danger-Medium{color:var(--medium)}
+    .danger-Low{color:var(--low)}   .danger-None{color:var(--none)}
+    .bar-bg{background:#e6e6e6;border-radius:99px;height:8px;overflow:hidden}
+    .bar{background:var(--green);height:100%;border-radius:99px;transition:width .5s}
+    .bar.weak{background:var(--medium)}
+    {% block style %}{% endblock %}
+  </style>
+</head>
+<body>
+{% block body %}{% endblock %}
+</body>
+</html>

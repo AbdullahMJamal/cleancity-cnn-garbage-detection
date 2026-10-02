@@ -1,0 +1,20 @@
+# Python environments
+env/
+.venv*/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# IDE
+.idea/
+
+# Runtime data (database, secret key, user photos)
+instance/
+reports.json
+reports.json.imported
+static/uploads/*
+!static/uploads/.gitkeep
+
+# Training data (download with scripts/prepare_dataset.py)
+dataset/
+

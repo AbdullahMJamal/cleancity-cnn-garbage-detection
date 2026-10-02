@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}CleanCity – Team Login{% endblock %}
+{% block style %}
+  .wrap{max-width:380px;margin:60px auto;padding:0 16px}
+  label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+  input[type=password]{width:100%;padding:11px 14px;border-radius:10px;border:1px solid #ddd;font-size:15px;margin-bottom:14px}
+  input[type=password]:focus{outline:none;border-color:var(--green)}
+  .btn{width:100%}
+{% endblock %}
+{% block body %}
+<div class="topbar dark">
+  <div><h1>🗑️ CleanCity</h1><p>Team access</p></div>
+  <div class="nav"><a href="{{ url_for('user_home') }}">← Report garbage</a></div>
+</div>
+<div class="wrap">
+  {% for msg in get_flashed_messages() %}<div class="notice err">{{ msg }}</div>{% endfor %}
+  <form class="card" method="POST">
+    <div class="card-title">🔒 Team dashboard login</div>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password" required autofocus>
+    <button class="btn" type="submit">Log in</button>
+  </form>
+</div>
+{% endblock %}
