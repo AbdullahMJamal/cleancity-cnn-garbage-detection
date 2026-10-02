@@ -4,6 +4,18 @@ A web app for **Sir Syed University of Engineering & Technology**: anyone can ph
 a **CNN (MobileNetV2, transfer learning)** identifies what kind of waste it is, and the cleaning team
 manages every report from a password-protected dashboard.
 
+![Operations dashboard](docs/screenshots/operations-dashboard.png)
+
+## Screenshots
+
+| Report page | Mobile — report details |
+|---|---|
+| ![Report page](docs/screenshots/report-page.png) | ![Mobile report details](docs/screenshots/mobile-report-details.png) |
+
+| Mobile — report form | Team login |
+|---|---|
+| ![Mobile report form](docs/screenshots/mobile-report-form.png) | ![Team login](docs/screenshots/team-login.png) |
+
 ## Features
 
 **Report page** (`/`)
@@ -18,7 +30,7 @@ manages every report from a password-protected dashboard.
 - Actions: Dispatch team → Mark cleaned, Reject, Reopen, **Re-classify** (re-runs the CNN, e.g. after retraining), Delete
 
 **Design**
-- UI follows the "Municipal Utility Interface" design system in `design/` (Google Stitch export):
+- UI follows the "Municipal Utility Interface" design system in `docs/design/` (Google Stitch export):
   Inter + JetBrains Mono, flat 1px borders, status-colour chips, dense data table
 
 **Under the hood**
@@ -33,8 +45,9 @@ manages every report from a password-protected dashboard.
 ```
 cleancity_cnn/
 ├── app.py                     ← Flask web app (run this!)
-├── database.py                ← SQLite storage for reports
+├── database.py                ← SQLite storage: reports + audit trail
 ├── train.py                   ← Trains the CNN and saves it
+├── requirements.txt
 ├── model/
 │   ├── garbage_classifier.py  ← CNN architecture, loading, prediction
 │   ├── garbage_model.keras    ← The trained model (created by train.py)
@@ -42,10 +55,14 @@ cleancity_cnn/
 ├── scripts/
 │   └── prepare_dataset.py     ← Builds the training dataset from public datasets
 ├── templates/                 ← base / user / team / login pages
-├── static/img/leaf.svg        ← Logo
-├── design/                    ← Original UI design (screens, HTML mockups, DESIGN.md)
-├── static/uploads/            ← Uploaded photos
+├── static/
+│   ├── img/leaf.svg           ← Logo
+│   └── uploads/               ← Photos submitted by users (not in git)
+├── samples/                   ← Example photos to try the app (one per class)
 ├── tests/test_app.py          ← Automated tests
+├── docs/
+│   ├── design/                ← Original UI design (Stitch screens, HTML mockups, DESIGN.md)
+│   └── screenshots/           ← Screenshots of the finished app
 └── instance/                  ← Database + secret key (created automatically, not in git)
 ```
 
@@ -115,6 +132,24 @@ python train.py --data-dir dataset
 ```
 python -m pytest
 ```
+
+## Try It with Sample Images
+
+The `samples/` folder has one example photo per class. Upload any of them on the report page:
+
+| File | Expected result | Danger |
+|---|---|---|
+| `samples/plastic.jpg` | Plastic | High |
+| `samples/glass.jpg` | Glass | High |
+| `samples/metal.jpg` | Metal | High |
+| `samples/organic.jpg` | Organic Waste | Medium |
+| `samples/cardboard.jpg` | Cardboard | Low |
+| `samples/paper.jpg` | Paper | Low |
+| `samples/not_garbage.jpg` | Not Garbage | None |
+
+All seven are classified correctly with over 99% confidence. `glass`, `organic`, `paper` and `not_garbage`
+were never seen during training; `cardboard`, `metal` and `plastic` come from the training set (every photo
+of those classes was used). Images are from the public datasets listed below.
 
 ## What the CNN Detects
 
