@@ -189,6 +189,32 @@ The repo includes a `Dockerfile` and the Hugging Face configuration at the top o
 
 The same `Dockerfile` works on any Docker host: `docker build -t cleancity . && docker run -p 7860:7860 cleancity`.
 
+### Hosting options compared
+
+| Host | Works? | Notes |
+|---|---|---|
+| **Hugging Face Spaces** | ✅ Recommended | Free, 16 GB RAM, Docker support, built for ML demos |
+| Google Cloud Run | ✅ | Uses the Dockerfile; generous free tier but needs a billing account; set memory to 2 GB |
+| Railway | ✅ | Uses the Dockerfile; small monthly cost |
+| Render (free) / Koyeb (free) | ❌ | 512 MB RAM is not enough for TensorFlow + the model |
+| Vercel / Next.js hosting | ❌ | Serverless functions are too small for TensorFlow (~250 MB limit) and have no permanent disk for the SQLite database |
+| GitHub Pages / Netlify | ❌ | Static sites only — cannot run Python |
+
+## Troubleshooting
+
+| Problem | Fix |
+|---|---|
+| `error: externally-managed-environment` when running `pip install` (Ubuntu / WSL) | Don't install into the system Python — create a virtual environment first (`python3 -m venv .venv && source .venv/bin/activate`), then `pip install -r requirements.txt`. Never use `--break-system-packages`. |
+| `running scripts is disabled on this system` (Windows PowerShell) | Run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once, then activate again. |
+| `No matching distribution found for tensorflow` | Your Python version is too new or too old. Use **Python 3.11** (`py -3.11 -m venv .venv` on Windows). |
+| Windows venv (`env\Scripts\...`) doesn't work in WSL / Linux | A virtual environment only works on the OS that created it. Create a separate one in WSL. |
+| Page says "AI model is not loaded" | `model/garbage_model.keras` is missing or TensorFlow is not installed. Run `pip install -r requirements.txt`; if the model file is missing, see [Retrain the model](#retrain-the-model-optional). |
+| Dashboard keeps asking for the password | Use the value of `TEAM_PASSWORD` (default `cleancity`). The variable must be set in the **same terminal** before `python app.py`. |
+| `Address already in use` / port 5000 busy | Another copy is running — stop it with **Ctrl + C**, or close the other terminal. |
+| First start is slow (10–20 s) | Normal — TensorFlow loads the model once at startup. |
+| Old reports show outdated AI results after retraining | Open the report on the dashboard and click **Re-classify**. |
+| "Invalid or expired form" after leaving the dashboard open | Your session expired — reload the page and try again. |
+
 ## Project Structure
 
 ```
