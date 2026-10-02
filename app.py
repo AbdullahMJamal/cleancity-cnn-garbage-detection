@@ -19,6 +19,7 @@ import hmac
 import io
 import os
 import secrets
+import threading
 import uuid
 from collections import Counter
 from datetime import datetime, timedelta
@@ -35,6 +36,9 @@ from model.garbage_classifier import (GARBAGE_CLASSES, TF_AVAILABLE, load_model,
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+# One CNN prediction at a time (the server may handle several requests at once)
+PREDICT_LOCK = threading.Lock()
 MAX_DESCRIPTION    = 500
 
 # All reports come from the university campus
@@ -211,7 +215,8 @@ def create_app(test_config=None):
         description = request.form.get('description', '').strip()[:MAX_DESCRIPTION]
 
         # ── Run CNN Prediction ────────────────────────────────────────────────
-        ai_result = predict_garbage(image_bytes, app.config['CNN_MODEL'])
+        with PREDICT_LOCK:
+            ai_result = predict_garbage(image_bytes, app.config['CNN_MODEL'])
         app.logger.info("CNN result: %s (%s%%)", ai_result['garbage_type'], ai_result['confidence'])
 
         filename  = save_photo(image, app.config['UPLOAD_FOLDER'])
@@ -304,7 +309,9 @@ def create_app(test_config=None):
         if not os.path.exists(photo_path):
             abort(404, 'Photo file is missing')
         with open(photo_path, 'rb') as f:
-            ai_result = predict_garbage(f.read(), app.config['CNN_MODEL'])
+            image_bytes = f.read()
+        with PREDICT_LOCK:
+            ai_result = predict_garbage(image_bytes, app.config['CNN_MODEL'])
         db.set_ai_result(report_id, ai_result)
         flash(f"Report #{report_id} re-classified: {ai_result['garbage_type']} "
               f"({ai_result['confidence']}%).")

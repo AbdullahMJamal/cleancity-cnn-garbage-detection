@@ -1,8 +1,28 @@
-# CleanCity – CNN Garbage Detection System
+---
+title: CleanCity
+emoji: 🍃
+colorFrom: green
+colorTo: gray
+sdk: docker
+app_port: 7860
+pinned: false
+short_description: CNN garbage detection and cleanup triage (Flask + MobileNetV2)
+---
 
-A web app for **Sir Syed University of Engineering & Technology**: anyone can photograph garbage on campus,
-a **CNN (MobileNetV2, transfer learning)** identifies what kind of waste it is, and the cleaning team
-manages every report from a password-protected dashboard.
+# CleanCity — CNN Garbage Detection & Cleanup Triage
+
+![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
+![TensorFlow](https://img.shields.io/badge/TensorFlow-2.21-FF6F00?logo=tensorflow&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-3-000000?logo=flask&logoColor=white)
+![Accuracy](https://img.shields.io/badge/validation%20accuracy-94.6%25-1F5C3F)
+![Tests](https://img.shields.io/badge/tests-21%20passing-2E7D4F)
+
+**Live demo:** _add your Hugging Face Space link here_ (see [Deploy](#deploy-free-live-demo))
+
+A web app for **Sir Syed University of Engineering & Technology, Karachi**. Anyone can photograph garbage on
+campus; a **convolutional neural network (MobileNetV2, transfer learning)** identifies the type of waste, rates how
+dangerous it is and recommends an action. The cleanup team triages every report from a password-protected
+operations dashboard.
 
 ![Operations dashboard](docs/screenshots/operations-dashboard.png)
 
@@ -19,155 +39,190 @@ manages every report from a password-protected dashboard.
 ## Features
 
 **Report page** (`/`)
-- Upload or drag & drop a photo (PNG / JPG / GIF / WEBP, max 16MB)
-- Classified record panel: report number, photo, garbage type, confidence, danger level, recommended action, score for every class
-- Warns when the AI is unsure (confidence below 50%)
+- Upload or drag & drop a photo (PNG / JPG / GIF / WEBP, max 16 MB)
+- Classified-record panel: report number, photo, waste type, confidence, danger level, recommended action and the score for every class
+- Flags uncertain predictions (confidence below 50%) for manual review
 
 **Operations dashboard** (`/team`, password protected)
-- Stats: total reports (+ last 24h), pending triage (+ critical count), in progress, cleaned (+ resolution rate)
+- Stats: total reports (+ last 24 h), pending triage (+ critical count), in progress, cleaned (+ resolution rate)
 - Search, filter by waste type / danger / status, pagination
-- Detail drawer: photo, GPS link, classification, class scores and a full **audit trail** of everything that happened to the report
-- Actions: Dispatch team → Mark cleaned, Reject, Reopen, **Re-classify** (re-runs the CNN, e.g. after retraining), Delete
+- Detail drawer: photo, GPS link, classification, class scores and a full **audit trail**
+- Actions: **Dispatch team → Mark cleaned**, Reject, Reopen, **Re-classify** (re-runs the CNN), Delete
 
-**Design**
-- UI follows the "Municipal Utility Interface" design system in `docs/design/` (Google Stitch export):
-  Inter + JetBrains Mono, flat 1px borders, status-colour chips, dense data table
-
-**Under the hood**
-- Trained CNN loaded once at startup (`model/garbage_model.keras`)
-- SQLite database (unique IDs, safe with many users at once)
-- Uploaded photos are checked, resized and re-saved as JPEG (removes hidden GPS metadata)
-- CSRF protection on all team forms, secure session cookies
-- 21 automated tests (`python -m pytest`)
-
-## Project Structure
-
-```
-cleancity_cnn/
-├── app.py                     ← Flask web app (run this!)
-├── database.py                ← SQLite storage: reports + audit trail
-├── train.py                   ← Trains the CNN and saves it
-├── requirements.txt
-├── model/
-│   ├── garbage_classifier.py  ← CNN architecture, loading, prediction
-│   ├── garbage_model.keras    ← The trained model (created by train.py)
-│   └── model_info.json        ← Accuracy & training details
-├── scripts/
-│   └── prepare_dataset.py     ← Builds the training dataset from public datasets
-├── templates/                 ← base / user / team / login pages
-├── static/
-│   ├── img/leaf.svg           ← Logo
-│   └── uploads/               ← Photos submitted by users (not in git)
-├── samples/                   ← Example photos to try the app (one per class)
-├── tests/test_app.py          ← Automated tests
-├── docs/
-│   ├── design/                ← Original UI design (Stitch screens, HTML mockups, DESIGN.md)
-│   └── screenshots/           ← Screenshots of the finished app
-└── instance/                  ← Database + secret key (created automatically, not in git)
-```
+**Engineering**
+- Trained CNN loaded once at startup; predictions serialized so concurrent requests are safe
+- SQLite database (unique IDs, safe with many users at once) with an events table for the audit trail
+- Uploaded photos are verified, resized and re-saved as JPEG (removes hidden GPS/EXIF metadata)
+- CSRF protection on all team forms, HTTP-only session cookies, safe login redirects
+- 21 automated tests, Docker image for deployment
+- UI built from a custom design system ([`docs/design/`](docs/design/municipal_utility_interface/DESIGN.md)): Inter + JetBrains Mono, flat 1 px borders, status-colour chips — plain CSS and JavaScript, no build step
 
 ## How the CNN Works
 
 ```
-User uploads photo
-       ↓
-Resize to 224×224, scale pixels to [-1, 1]
-       ↓
-MobileNetV2 (pre-trained on ImageNet) extracts 1280 visual features
-       ↓
+Photo uploaded
+      ↓
+Fix rotation (EXIF), resize to 224×224, scale pixels to [-1, 1]
+      ↓
+MobileNetV2 (pre-trained on ImageNet) → 1280 visual features
+      ↓
 Our head: GlobalAveragePooling → Dense(128, ReLU) → Dropout(0.3) → Dense(7, Softmax)
-       ↓
-Cardboard / Glass / Metal / Organic Waste / Paper / Plastic / Not Garbage
-       ↓
-Confidence % + Danger Level + Recommended Action → shown to user and team
+      ↓
+Cardboard · Glass · Metal · Organic Waste · Paper · Plastic · Not Garbage
+      ↓
+Confidence % + danger level + recommended action → shown to the citizen and the team
 ```
 
-### Training (transfer learning in two phases)
-1. **Head training** – MobileNetV2 frozen, only our new layers learn (Adam, lr = 1e-3)
-2. **Fine-tuning** – last 40 MobileNetV2 layers un-frozen, tiny learning rate (1e-5)
+### Training — transfer learning in two phases
+1. **Head training** — MobileNetV2 frozen, only the new layers learn (Adam, lr 1e-3, 6 epochs)
+2. **Fine-tuning** — last 40 MobileNetV2 layers unfrozen, BatchNorm kept frozen (Adam, lr 1e-5, 6 epochs)
 
-Data augmentation (flip, rotation, zoom, contrast) and early stopping reduce overfitting.
-80% of photos are used for training, 20% are held back to measure accuracy honestly.
-Results (overall + per-class accuracy, confusion matrix) are saved in `model/model_info.json`.
+Data augmentation (flip, rotation, zoom, contrast), early stopping and balanced classes (≤ 900 photos each)
+reduce overfitting. 80% of the photos are used for training and 20% are held back to measure accuracy;
+the script checks that no photo appears in both sets.
 
-### Dataset
-| Our class     | Source                                                            |
-|---------------|-------------------------------------------------------------------|
-| Cardboard, Glass, Metal, Paper, Plastic, Organic Waste | Garbage Classification (12 classes, Kaggle / Hugging Face `UdaraChamidu/Garbage-Classification-with-12-classes`) — glass = brown + green + white glass, organic = biological |
-| Not Garbage   | Intel Image Classification scenes: buildings, street, forest, sea, mountain (Hugging Face `sfarrukhm/intel-image-classification`) |
+### Results (1,225 held-out validation photos)
 
-Up to 900 photos per class, so classes are balanced.
+| Class | Accuracy | Danger | Recommended action |
+|---|---|---|---|
+| Plastic | 88.9% | High | Collect and send to plastic recycling |
+| Glass | 88.9% | High | Handle carefully — use gloves; glass recycling |
+| Metal | 94.9% | High | Use protective gear; scrap/metal recycling |
+| Organic Waste | 97.1% | Medium | Compost or organic waste facility |
+| Cardboard | 94.3% | Low | Send to recycling center |
+| Paper | 96.4% | Low | Send to paper recycling |
+| Not Garbage | 100.0% | None | No action needed |
+| **Overall** | **94.6%** | | |
 
-## Setup
+Full details including the confusion matrix are in [`model/model_info.json`](model/model_info.json).
+The datasets mostly contain clear photos of single items, so accuracy on cluttered real-world scenes will be lower.
 
-### 1. Install packages
-```
-pip install -r requirements.txt
-```
-(TensorFlow is large — this may take 5–10 minutes.)
-
-### 2. Run the app
-In PyCharm: right-click `app.py` → Run 'app'. Or in a terminal:
-```
-python app.py
-```
-- Report page: http://127.0.0.1:5000/
-- Team dashboard: http://127.0.0.1:5000/team — default password **`cleancity`**
-
-To use your own password (recommended), set an environment variable before starting:
-```
-set TEAM_PASSWORD=your-password        (Windows cmd)
-$env:TEAM_PASSWORD="your-password"     (PowerShell)
-export TEAM_PASSWORD=your-password     (Linux / macOS)
-```
-
-### 3. (Optional) Retrain the model
-The trained model is already included. To train it again:
-```
-python scripts/prepare_dataset.py --garbage-dir <12-class folder> --clean-dir <clean images folder> --out dataset
-python train.py --data-dir dataset
-```
-
-### 4. Run the tests
-```
-python -m pytest
-```
+### Datasets
+| Our class | Source |
+|---|---|
+| Cardboard, Glass, Metal, Paper, Plastic, Organic Waste | [Garbage Classification (12 classes)](https://huggingface.co/datasets/UdaraChamidu/Garbage-Classification-with-12-classes) — glass = brown + green + white glass, organic = biological |
+| Not Garbage | [Intel Image Classification](https://huggingface.co/datasets/sfarrukhm/intel-image-classification) — buildings, street, forest, sea, mountain scenes |
 
 ## Try It with Sample Images
 
-The `samples/` folder has one example photo per class. Upload any of them on the report page:
+[`samples/`](samples/) has one example photo per class — upload any of them on the report page:
 
-| File | Expected result | Danger |
+| File | Expected result |
+|---|---|
+| `samples/plastic.jpg` | Plastic |
+| `samples/glass.jpg` | Glass |
+| `samples/metal.jpg` | Metal |
+| `samples/organic.jpg` | Organic Waste |
+| `samples/cardboard.jpg` | Cardboard |
+| `samples/paper.jpg` | Paper |
+| `samples/not_garbage.jpg` | Not Garbage |
+
+All seven are classified correctly with more than 99% confidence. `glass`, `organic`, `paper` and `not_garbage`
+were never seen during training.
+
+## Getting Started
+
+**Requirements:** Python 3.11 (TensorFlow does not support every newer Python version yet).
+
+```bash
+git clone https://github.com/AbdullahMJamal/<repo-name>.git
+cd <repo-name>
+
+# create and activate a virtual environment
+python -m venv .venv
+.venv\Scripts\activate          # Windows (PowerShell: .venv\Scripts\Activate.ps1)
+source .venv/bin/activate       # Linux / macOS / WSL
+
+pip install -r requirements.txt   # TensorFlow is large — this can take a few minutes
+python app.py
+```
+
+| Page | URL |
+|---|---|
+| Report page | http://127.0.0.1:5000/ |
+| Operations dashboard | http://127.0.0.1:5000/team — default password **`cleancity`** |
+
+### Configuration (environment variables)
+
+| Variable | Purpose | Default |
 |---|---|---|
-| `samples/plastic.jpg` | Plastic | High |
-| `samples/glass.jpg` | Glass | High |
-| `samples/metal.jpg` | Metal | High |
-| `samples/organic.jpg` | Organic Waste | Medium |
-| `samples/cardboard.jpg` | Cardboard | Low |
-| `samples/paper.jpg` | Paper | Low |
-| `samples/not_garbage.jpg` | Not Garbage | None |
+| `TEAM_PASSWORD` | Password for the operations dashboard | `cleancity` |
+| `SECRET_KEY` | Signs session cookies | random, saved in `instance/secret_key` |
+| `FLASK_DEBUG` | `1` enables debug mode (local development only) | off |
 
-All seven are classified correctly with over 99% confidence. `glass`, `organic`, `paper` and `not_garbage`
-were never seen during training; `cardboard`, `metal` and `plastic` come from the training set (every photo
-of those classes was used). Images are from the public datasets listed below.
+```bash
+export TEAM_PASSWORD="your-password"     # Linux / macOS / WSL
+$env:TEAM_PASSWORD="your-password"       # Windows PowerShell
+```
 
-## What the CNN Detects
+### Run the tests
+```bash
+python -m pytest
+```
 
-| Garbage Type  | Danger Level | Action                          |
-|---------------|--------------|---------------------------------|
-| Plastic       | High         | Send to plastic recycling       |
-| Glass         | High         | Handle with gloves              |
-| Metal         | High         | Send to scrap recycling         |
-| Organic Waste | Medium       | Compost or organic facility     |
-| Cardboard     | Low          | Send to recycling center        |
-| Paper         | Low          | Send to paper recycling         |
-| Not Garbage   | None         | No action needed                |
+### Retrain the model (optional)
+The trained model is included. To train it again, download the two datasets above, then:
+```bash
+python scripts/prepare_dataset.py --garbage-dir <12-class folder> --clean-dir <clean scenes folder> --out dataset
+python train.py --data-dir dataset
+```
+Training takes about 40 minutes on a laptop CPU. Afterwards, use **Re-classify** on the dashboard to update old reports.
 
-## Technical Details
+## Deploy (free live demo)
 
-- CNN Architecture: MobileNetV2 (transfer learning) + custom classification head
-- Pre-trained on: ImageNet (1.2M images, 1000 classes), fine-tuned on ~6,000 waste/scene photos
-- Image preprocessing: EXIF rotation fix, resize to 224×224, normalize to [-1, 1]
-- Framework: TensorFlow / Keras
-- Backend: Python Flask + SQLite
-- Frontend: HTML + CSS + JavaScript (no frameworks)
+The repo includes a `Dockerfile` and the Hugging Face configuration at the top of this README, so it runs on
+**[Hugging Face Spaces](https://huggingface.co/spaces)** for free (16 GB RAM — enough for TensorFlow).
+
+1. Create a Space at https://huggingface.co/new-space → **SDK: Docker** → **Blank** → Public.
+2. In the Space: **Settings → Variables and secrets → New secret** → `TEAM_PASSWORD` = your password.
+3. Upload the project with the Hugging Face CLI (it handles the large model file automatically):
+   ```bash
+   pip install -U huggingface_hub
+   hf auth login        # paste an access token with "write" permission (huggingface.co/settings/tokens)
+   hf upload <hf-username>/cleancity . . --repo-type space \
+     --exclude "env/*" --exclude ".git/*" --exclude ".idea/*" --exclude "instance/*" \
+     --exclude "static/uploads/*" --exclude "**/__pycache__/*" --exclude ".venv*/*"
+   ```
+4. Wait for the build (~5 min). Your app is live at `https://<hf-username>-cleancity.hf.space` — put that link at the top of this README.
+
+> On the free tier the Space sleeps when unused and its storage resets on restart, so demo reports are temporary.
+
+The same `Dockerfile` works on any Docker host: `docker build -t cleancity . && docker run -p 7860:7860 cleancity`.
+
+## Project Structure
+
+```
+├── app.py                     ← Flask app: routes, security, upload handling
+├── database.py                ← SQLite storage: reports + audit trail
+├── train.py                   ← Trains the CNN and saves it
+├── model/
+│   ├── garbage_classifier.py  ← CNN architecture, loading, prediction
+│   ├── garbage_model.keras    ← Trained model
+│   └── model_info.json        ← Accuracy, per-class results, confusion matrix
+├── scripts/prepare_dataset.py ← Builds the training dataset from the public datasets
+├── templates/                 ← base / user / team / login pages (Jinja2)
+├── static/
+│   ├── img/leaf.svg           ← Logo
+│   └── uploads/               ← Photos submitted by users (not in git)
+├── samples/                   ← Example photos, one per class
+├── tests/test_app.py          ← 21 automated tests
+├── docs/
+│   ├── design/                ← UI design system and mockups
+│   └── screenshots/           ← Screenshots used in this README
+├── Dockerfile                 ← Production image (gunicorn)
+└── requirements.txt
+```
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Machine learning | TensorFlow / Keras, MobileNetV2 transfer learning |
+| Backend | Python, Flask, SQLite, Pillow |
+| Frontend | HTML, CSS, JavaScript (no frameworks), Jinja2 |
+| Testing | pytest |
+| Deployment | Docker, gunicorn, Hugging Face Spaces |
+
+---
+
+Student project — Sir Syed University of Engineering & Technology, Karachi.
