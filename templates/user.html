@@ -1,177 +1,271 @@
 {% extends "base.html" %}
-{% block title %}CleanCity – Report Garbage{% endblock %}
+{% block title %}CleanCity – Report illegal dumping{% endblock %}
+{% block nav_report %}active{% endblock %}
 {% block style %}
-  .container{max-width:540px;margin:0 auto;padding:20px 16px}
+  .grid{display:grid;grid-template-columns:7fr 5fr;gap:16px;align-items:start}
+  #result-panel{scroll-margin-top:72px}
+  .card{padding:24px}
+  .card-head{display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--border)}
+  .form{display:flex;flex-direction:column;gap:16px;padding-top:16px}
+  .field{display:flex;flex-direction:column;gap:4px}
+  .field-label{display:flex;justify-content:space-between;align-items:baseline;font-size:15px;line-height:20px;font-weight:600}
+  .field-label small{font-size:13px;font-weight:400;color:var(--muted)}
 
   /* Upload */
-  .upload-zone{border:2px dashed #a8d8c5;border-radius:10px;padding:28px;
-               text-align:center;cursor:pointer;transition:.2s;position:relative}
-  .upload-zone:hover,.upload-zone.drag{border-color:var(--green);background:var(--green-soft)}
-  .upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
-  .upload-zone .icon{font-size:38px}
-  .upload-zone p{font-size:13px;color:var(--muted);margin-top:6px}
-  .upload-zone small{font-size:11px;color:#999}
-  #photo-preview{width:100%;max-height:260px;object-fit:cover;border-radius:10px;margin-top:12px;display:none}
+  .drop{position:relative;border:1px dashed #C0C9C0;border-radius:6px;background:#F3F4F0;padding:12px;
+        display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .12s,background .12s}
+  .drop:hover,.drop.drag{border-color:var(--accent);background:#EEF3EF}
+  .drop input{position:absolute;inset:0;opacity:0;cursor:pointer}
+  .drop .thumb{width:100px;height:75px;border-radius:4px;border:1px solid var(--border);background:#E7E9E5;
+               display:grid;place-items:center;color:var(--muted);overflow:hidden;flex-shrink:0}
+  .drop .thumb img{width:100%;height:100%;object-fit:cover}
+  .drop .meta{display:flex;flex-direction:column;min-width:0;flex:1}
+  .drop .fname{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .drop .side{display:flex;flex-direction:column;align-items:flex-end;gap:4px;font-size:13px}
+  .drop .side .ok{display:inline-flex;align-items:center;gap:4px;color:#196C40}
 
-  /* Location */
-  .loc-box{background:var(--green-soft);border:1px solid var(--green-line);border-radius:10px;
-           padding:12px 14px;font-size:13px;color:#333}
-  .loc-coords{font-size:12px;color:var(--green);margin-top:4px}
+  .readonly{background:#F3F4F0;border:1px solid #C0C9C0;border-radius:6px;padding:8px 12px;display:flex;flex-direction:column;gap:2px}
+  .readonly .row{display:flex;align-items:center;gap:6px}
+  .readonly .sub{padding-left:22px;color:#404943;display:flex;gap:8px;flex-wrap:wrap}
 
-  textarea{width:100%;padding:10px 14px;border-radius:10px;border:1px solid #ddd;
-           font-size:14px;resize:none;color:#333}
-  textarea:focus{outline:none;border-color:var(--green)}
-  .counter{font-size:11px;color:#999;text-align:right;margin-top:4px}
+  textarea{width:100%;background:var(--surface);border:1px solid #C0C9C0;border-radius:6px;padding:8px;resize:vertical;min-height:84px}
+  textarea:hover{border-color:var(--border-strong)}
+  textarea:focus{outline:none;border-color:var(--accent)}
+  .hint{display:flex;justify-content:space-between;color:var(--muted)}
 
-  .submit-btn{width:100%;padding:14px;font-size:16px}
+  .sysline{display:flex;align-items:center;justify-content:center;gap:6px;color:var(--muted);font-size:13px;padding-top:4px;text-align:center}
 
-  /* AI Result Box */
-  .ai-box{border-radius:12px;padding:16px;margin-bottom:16px;display:none}
-  .ai-box.garbage{background:#fff8e1;border:1px solid #ffd54f}
-  .ai-box.not-garbage{background:#e8f5e9;border:1px solid #a5d6a7}
-  .ai-box h3{font-size:15px;font-weight:600;margin-bottom:10px}
-  .ai-row{display:flex;justify-content:space-between;gap:12px;font-size:13px;
-          padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)}
-  .ai-row:last-child{border-bottom:none}
-  .ai-label{color:var(--muted)}
-  .ai-value{font-weight:600;color:#222;text-align:right}
-  .ai-box .bar-bg{margin-top:8px}
-  .uncertain{font-size:12px;color:#7a5a00;margin-top:8px;display:none}
+  /* Result panel */
+  .result-head{display:flex;justify-content:space-between;align-items:center;gap:8px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+  .result-head h2{font-size:18px;line-height:24px;font-weight:600;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+  .tag{font-family:var(--mono);font-size:12px;padding:1px 6px;border:1px solid #C0C9C0;border-radius:4px;background:#EDEEEB;color:#404943;font-weight:400}
+  .shot{position:relative;aspect-ratio:16/9;margin:12px 0 4px;border:1px solid var(--border);border-radius:4px;overflow:hidden;background:#F3F4F0}
+  .shot img{width:100%;height:100%;object-fit:cover;display:block}
+  .shot .ref{position:absolute;right:6px;bottom:6px;background:rgba(46,49,47,.85);color:#F0F1ED;font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:4px}
+  dl{border-top:1px solid var(--border);margin-top:12px}
+  dl>div{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);min-height:40px}
+  dt{color:var(--muted);font-size:13px}
+  dd{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;text-align:right}
+  dd.big{font-size:14px;font-weight:600}
+  .scores{margin-top:12px}
+  .score{display:grid;grid-template-columns:110px 1fr 52px;align-items:center;gap:8px;font-size:12px;padding:3px 0}
+  .score .meter{width:100%}
+  .score .v{text-align:right}
+  .after{padding-top:12px;display:flex;flex-direction:column;gap:6px;color:var(--muted);font-size:13px}
 
-  /* All predictions */
-  .preds-title{margin-top:12px;font-size:12px;color:#888;font-weight:600}
-  .pred-row{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:12px}
-  .pred-label{width:100px;color:#555}
-  .pred-row .bar-bg{flex:1;height:6px;margin:0}
-  .pred-pct{width:44px;text-align:right;color:#333;font-weight:600}
+  .empty-state{padding:32px 8px;text-align:center;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:8px}
+  .empty-state .ring{width:48px;height:48px;border-radius:6px;border:1px solid var(--border);background:#F3F4F0;display:grid;place-items:center}
+  .steps{list-style:none;text-align:left;margin-top:8px;display:flex;flex-direction:column;gap:6px;font-size:13px}
+  .steps li{display:flex;gap:8px;align-items:center}
+  .steps .n{font-family:var(--mono);font-size:11px;width:18px;height:18px;border:1px solid var(--border);border-radius:4px;display:grid;place-items:center;color:var(--text)}
 
-  #success-box,#error-box,#loading-box{display:none}
-  .spinner{display:inline-block;width:14px;height:14px;border:2px solid #90caf9;border-top-color:#1565c0;
-           border-radius:50%;animation:spin .8s linear infinite;vertical-align:-2px;margin-right:6px}
+  .spin{width:14px;height:14px;border:2px solid #C9DCD1;border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
-{% endblock %}
-{% block body %}
-<div class="topbar">
-  <div>
-    <h1>🗑️ CleanCity</h1>
-    <p>AI-powered garbage reporting</p>
-  </div>
-  <div class="nav"><a href="{{ url_for('team_dashboard') }}">Team Dashboard →</a></div>
-</div>
 
-<div class="container">
+  @media(max-width:960px){ .grid{grid-template-columns:1fr} }
+  @media(max-width:640px){
+    .card{padding:16px}
+    .drop{flex-wrap:wrap}
+    .drop .side{flex-direction:row;width:100%;justify-content:space-between;border-top:1px solid var(--border);padding-top:6px}
+  }
+{% endblock %}
+
+{% block body %}
+<div class="page">
+  <div class="page-head">
+    <div>
+      <h1>Report illegal dumping</h1>
+      <p class="lede">Upload a clear photo. The system will identify the waste type and notify the cleanup team.</p>
+    </div>
+    {% if model_trained %}
+      <span class="chip nodot label" style="color:#404943;background:#E7E9E5;border-color:#C0C9C0;height:24px"><span class="dot live" style="width:6px;height:6px"></span>Intake active</span>
+    {% else %}
+      <span class="chip warn label" style="height:24px">Classifier offline</span>
+    {% endif %}
+  </div>
+  <div class="rule"></div>
 
   {% if not model_trained %}
-  <div class="notice warn">⚠️ The AI model is not loaded yet. Your report will still reach the team,
-    who will check the photo manually.</div>
+  <div class="notice warn">The AI model is not loaded. Reports still reach the team, who will inspect the photo manually.</div>
   {% endif %}
+  <div class="notice err hidden" id="error-box"></div>
 
-  <div class="notice ok"   id="success-box"></div>
-  <div class="notice err"  id="error-box"></div>
-  <div class="notice info" id="loading-box"><span class="spinner"></span>CNN is analyzing your photo... please wait</div>
+  <div class="grid">
+    <!-- ── Left: submission form ─────────────────────────────────────────── -->
+    <section class="panel card">
+      <div class="card-head">
+        <span class="label">Incident details</span>
+        <span class="mono muted">CAMPUS INTAKE</span>
+      </div>
 
-  <!-- AI RESULT (shown after submit) -->
-  <div class="ai-box" id="ai-box">
-    <h3 id="ai-title">🤖 AI Analysis Result</h3>
-    <div class="ai-row"><span class="ai-label">Detected</span><span class="ai-value" id="ai-type">—</span></div>
-    <div class="ai-row"><span class="ai-label">Confidence</span><span class="ai-value" id="ai-confidence">—</span></div>
-    <div class="bar-bg"><div class="bar" id="ai-conf-bar" style="width:0%"></div></div>
-    <div class="uncertain" id="ai-uncertain">🤔 The AI is not very sure about this one — the team will double-check the photo.</div>
-    <div class="ai-row" style="margin-top:8px"><span class="ai-label">Danger level</span><span class="ai-value" id="ai-danger">—</span></div>
-    <div class="ai-row"><span class="ai-label">Action</span><span class="ai-value" id="ai-action" style="max-width:60%">—</span></div>
-    <div id="preds-wrap">
-      <div class="preds-title">All class scores:</div>
-      <div id="all-preds"></div>
-    </div>
+      <form class="form" id="report-form" novalidate>
+        <div class="field">
+          <span class="field-label">Visual documentation</span>
+          <label class="drop" id="drop">
+            <input type="file" id="photo-input" accept="image/png,image/jpeg,image/gif,image/webp" aria-label="Choose photo">
+            <span class="thumb" id="thumb">
+              <svg class="i" viewBox="0 0 24 24" style="width:22px;height:22px"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+            </span>
+            <span class="meta">
+              <span class="fname" id="fname">Choose or drop a photo</span>
+              <span class="mono muted" id="fsize">No file selected</span>
+              <span class="muted" style="font-size:13px;margin-top:2px">JPG / PNG / GIF / WEBP, max 16 MB</span>
+            </span>
+            <span class="side">
+              <span class="link" id="pick-label">Browse</span>
+              <span class="ok label hidden" id="ready"><svg class="i sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>Ready</span>
+            </span>
+          </label>
+        </div>
+
+        <div class="field">
+          <span class="field-label">Location <small class="label" style="letter-spacing:.06em">(read-only)</small></span>
+          <div class="readonly">
+            <div class="row">
+              <svg class="i muted" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span>{{ campus.address }}</span>
+            </div>
+            <div class="sub mono">
+              <span>[{{ campus.latitude }}° N, {{ campus.longitude }}° E]</span>
+              <span class="muted">•</span>
+              <span>{{ campus.district }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="description">Description <small>Optional</small></label>
+          <textarea id="description" rows="3" maxlength="500"
+            placeholder="e.g. Pile of bottles blocking the walkway near the main gate"></textarea>
+          <span class="hint mono"><span>Max 500 characters.</span><span><span id="desc-count">0</span>/500</span></span>
+        </div>
+
+        <div class="field" style="gap:8px;padding-top:4px">
+          <button class="btn btn-primary btn-lg" id="submit-btn" type="submit" disabled>Submit report</button>
+          <div class="sysline" id="sysline">
+            {% if model_trained %}
+              <span class="dot live"></span>
+              Classifier online · MobileNetV2{% if model_info %} · {{ model_info.val_accuracy }}% validation accuracy{% endif %}
+            {% else %}
+              <span class="dot pending"></span> Classifier offline · manual review
+            {% endif %}
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- ── Right: classified record ──────────────────────────────────────── -->
+    <section class="panel card" id="result-panel" aria-live="polite">
+      <!-- Before submitting -->
+      <div id="state-empty">
+        <div class="result-head"><h2>Classified record</h2><span class="tag">AWAITING</span></div>
+        <div class="empty-state">
+          <div class="ring"><svg class="i" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/></svg></div>
+          <div style="color:var(--text);font-weight:600">No report submitted yet</div>
+          <ol class="steps">
+            <li><span class="n">1</span>Attach a photo of the waste</li>
+            <li><span class="n">2</span>The CNN identifies the waste type</li>
+            <li><span class="n">3</span>The cleanup team receives a ticket</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- While analysing -->
+      <div id="state-loading" class="hidden">
+        <div class="result-head"><h2>Analysing photo</h2><span class="tag">CNN</span></div>
+        <div class="empty-state"><span class="spin"></span><span>Running MobileNetV2 classifier…</span></div>
+      </div>
+
+      <!-- Result -->
+      <div id="state-result" class="hidden">
+        <div class="result-head">
+          <h2><span id="r-title">Report #—</span><span class="tag">AUTO-GEN</span></h2>
+          <span class="mono muted" id="r-time"></span>
+        </div>
+        <div class="shot"><img id="r-photo" alt="Uploaded incident photo"><span class="ref" id="r-ref"></span></div>
+        <span class="muted" style="font-size:13px">Uploaded documentation — {{ campus.address }}</span>
+
+        <dl>
+          <div><dt>Detected</dt><dd id="r-detected"></dd></div>
+          <div><dt>Waste type</dt><dd class="big" id="r-type"></dd></div>
+          <div><dt>Confidence</dt><dd><span class="meter" id="r-meter"><span></span></span><span class="num" id="r-conf"></span></dd></div>
+          <div><dt>Danger level</dt><dd><span class="dot" id="r-danger-dot"></span><span id="r-danger"></span></dd></div>
+          <div><dt>Recommended action</dt><dd id="r-action" style="font-weight:400;max-width:62%"></dd></div>
+          <div><dt>Status</dt><dd><span class="dot pending"></span>Pending triage</dd></div>
+        </dl>
+
+        <div class="notice warn hidden" id="r-unsure" style="margin:12px 0 0">The classifier is not confident about this photo — the team will verify it manually.</div>
+
+        <div class="scores" id="r-scores-wrap">
+          <div class="label" style="margin-bottom:4px">All class scores</div>
+          <div id="r-scores"></div>
+        </div>
+
+        <div class="after">
+          <span>Submitted to the cleanup team. Ticket added to the triage queue.</span>
+          <span><button class="link" type="button" id="again">Submit another report
+            <svg class="i sm" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button></span>
+        </div>
+      </div>
+    </section>
   </div>
-
-  <!-- PHOTO -->
-  <div class="card">
-    <div class="card-title">📷 Upload photo of garbage</div>
-    <div class="upload-zone" id="upload-zone">
-      <input type="file" id="photo-input" accept="image/png,image/jpeg,image/gif,image/webp">
-      <div class="icon">📸</div>
-      <p id="upload-text">Tap to take a photo or choose from gallery</p>
-      <small>PNG, JPG, GIF or WEBP · max 16MB</small>
-    </div>
-    <img id="photo-preview" alt="Preview">
-  </div>
-
-  <!-- LOCATION (fixed: reports are for the campus) -->
-  <div class="card">
-    <div class="card-title">📍 Location</div>
-    <div class="loc-box">
-      <div>📍 {{ campus.address }}</div>
-      <div class="loc-coords">Coordinates: {{ campus.latitude }}, {{ campus.longitude }}</div>
-    </div>
-  </div>
-
-  <!-- DESCRIPTION -->
-  <div class="card">
-    <div class="card-title">📝 Description (optional)</div>
-    <textarea id="description" rows="3" maxlength="500"
-      placeholder="e.g. Large pile of garbage near the main gate..."></textarea>
-    <div class="counter"><span id="desc-count">0</span>/500</div>
-  </div>
-
-  <button class="btn submit-btn" id="submit-btn" disabled>🤖 Analyze & Submit Report</button>
-
 </div>
+{% endblock %}
 
+{% block scripts %}
 <script>
   const MAX_SIZE = 16 * 1024 * 1024;
   const $ = id => document.getElementById(id);
   let photoFile = null;
 
-  function show(id, text){ const el=$(id); if(text!==undefined) el.textContent=text; el.style.display='block'; }
-  function hide(...ids){ ids.forEach(id => $(id).style.display='none'); }
+  const fmtSize = b => b > 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB';
+  function showError(msg){ const e = $('error-box'); e.textContent = msg; e.classList.remove('hidden'); }
+  function clearError(){ $('error-box').classList.add('hidden'); }
+  function showState(name){ ['empty','loading','result'].forEach(s => $('state-' + s).classList.toggle('hidden', s !== name)); }
 
   // ── Photo selection (click or drag & drop) ─────────────────────────────────
   function setPhoto(file){
-    hide('error-box');
+    clearError();
     if(!file) return;
-    if(!file.type.startsWith('image/')){ show('error-box','❌ Please choose an image file.'); return; }
-    if(file.size > MAX_SIZE){ show('error-box','❌ Photo is too large (max 16MB).'); return; }
+    if(!file.type.startsWith('image/')){ showError('Please choose an image file (JPG, PNG, GIF or WEBP).'); return; }
+    if(file.size > MAX_SIZE){ showError('Photo is too large — the limit is 16 MB.'); return; }
     photoFile = file;
-    $('upload-text').textContent = '✅ ' + file.name + ' — tap to change';
-    const img = $('photo-preview');
-    img.src = URL.createObjectURL(file);
-    img.style.display = 'block';
+    const img = document.createElement('img');
+    img.src = URL.createObjectURL(file); img.alt = 'Selected photo';
+    $('thumb').replaceChildren(img);
+    $('fname').textContent = file.name;
+    $('fsize').textContent = fmtSize(file.size) + ' • ' + (file.type.split('/')[1] || '').toUpperCase();
+    $('pick-label').textContent = 'Replace';
+    $('ready').classList.remove('hidden');
     $('submit-btn').disabled = false;
   }
   $('photo-input').addEventListener('change', e => setPhoto(e.target.files[0]));
-  const zone = $('upload-zone');
-  ['dragenter','dragover'].forEach(ev => zone.addEventListener(ev, e => { e.preventDefault(); zone.classList.add('drag'); }));
-  ['dragleave','drop'].forEach(ev => zone.addEventListener(ev, () => zone.classList.remove('drag')));
-  zone.addEventListener('drop', e => { e.preventDefault(); setPhoto(e.dataTransfer.files[0]); });
-
+  const drop = $('drop');
+  ['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('drag'); }));
+  ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, () => drop.classList.remove('drag')));
+  drop.addEventListener('drop', e => { e.preventDefault(); setPhoto(e.dataTransfer.files[0]); });
   $('description').addEventListener('input', e => $('desc-count').textContent = e.target.value.length);
 
   // ── Submit ─────────────────────────────────────────────────────────────────
-  $('submit-btn').addEventListener('click', async () => {
+  $('report-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    if(!photoFile) return;
     const btn = $('submit-btn');
-    btn.disabled = true; btn.textContent = '⏳ Submitting...';
-    hide('ai-box','success-box','error-box'); show('loading-box');
+    btn.disabled = true; btn.textContent = 'Submitting…';
+    clearError(); showState('loading');
 
     const fd = new FormData();
     fd.append('photo', photoFile);
     fd.append('description', $('description').value);
-
     try {
       const res  = await fetch('{{ url_for("submit_report") }}', {method:'POST', body:fd});
       const data = await res.json();
-      if(data.success){
-        showAIResult(data.ai_result);
-        show('success-box', `✅ Report #${data.report_id} submitted! The team has been notified.`);
-        resetForm();
-      } else {
-        show('error-box', '❌ ' + (data.error || 'Something went wrong'));
-      }
+      if(data.success){ showResult(data); resetForm(); }
+      else { showState('empty'); showError(data.error || 'Something went wrong. Please try again.'); }
     } catch(err) {
-      show('error-box', '❌ Network error. Check your connection and try again.');
+      showState('empty'); showError('Network error — check your connection and try again.');
     } finally {
-      hide('loading-box');
-      btn.textContent = '🤖 Analyze & Submit Report';
+      btn.textContent = 'Submit report';
       btn.disabled = !photoFile;
     }
   });
@@ -179,41 +273,52 @@
   function resetForm(){
     photoFile = null;
     $('photo-input').value = '';
-    $('photo-preview').style.display = 'none';
-    $('upload-text').textContent = 'Tap to take a photo or choose from gallery';
+    $('thumb').innerHTML = '<svg class="i" viewBox="0 0 24 24" style="width:22px;height:22px"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>';
+    $('fname').textContent = 'Choose or drop a photo';
+    $('fsize').textContent = 'No file selected';
+    $('pick-label').textContent = 'Browse';
+    $('ready').classList.add('hidden');
     $('description').value = ''; $('desc-count').textContent = '0';
   }
 
-  function showAIResult(r){
-    const box = $('ai-box');
-    box.className = 'ai-box ' + (r.is_garbage ? 'garbage' : 'not-garbage');
-    box.style.display = 'block';
-    $('ai-title').textContent = r.garbage_type === 'Unknown' ? '📋 Report received'
-                              : r.is_garbage ? '🚨 Garbage Detected!' : '✅ No Garbage Detected';
-    $('ai-type').textContent = r.garbage_type;
-    $('ai-confidence').textContent = r.confidence + '%';
-    $('ai-conf-bar').style.width = r.confidence + '%';
-    $('ai-conf-bar').className = 'bar' + (r.uncertain ? ' weak' : '');
-    $('ai-uncertain').style.display = (r.uncertain && r.garbage_type !== 'Unknown') ? 'block' : 'none';
+  function showResult(data){
+    const r = data.ai_result;
+    const known = r.garbage_type !== 'Unknown';
+    $('r-title').textContent = 'Report #' + data.report_id;
+    $('r-time').textContent = data.submitted_at;
+    $('r-photo').src = data.photo_url;
+    $('r-ref').textContent = 'REF: SSUET-' + String(data.report_id).padStart(4, '0');
 
-    $('ai-danger').textContent = r.danger_level;
-    $('ai-danger').className = 'ai-value danger-' + r.danger_level;
-    $('ai-action').textContent = r.recommended_action;
+    $('r-detected').textContent = !known ? 'Needs manual review' : r.is_garbage ? 'Garbage' : 'No garbage';
+    $('r-type').textContent = r.garbage_type;
+    $('r-conf').textContent = known ? r.confidence + '%' : '—';
+    $('r-meter').className = 'meter' + (r.uncertain ? ' weak' : '');
+    $('r-meter').firstElementChild.style.width = r.confidence + '%';
+    $('r-danger').textContent = r.danger_level;
+    $('r-danger-dot').className = 'dot ' + r.danger_level;
+    $('r-action').textContent = r.recommended_action;
+    $('r-unsure').classList.toggle('hidden', !(known && r.uncertain));
 
-    // All predictions bar chart (built with DOM methods — safe from HTML injection)
-    const list = $('all-preds');
+    const list = $('r-scores');
     list.replaceChildren();
-    const preds = Object.entries(r.all_predictions || {}).sort((a,b) => b[1]-a[1]);
-    $('preds-wrap').style.display = preds.length ? 'block' : 'none';
+    const preds = Object.entries(r.all_predictions || {}).sort((a, b) => b[1] - a[1]);
+    $('r-scores-wrap').classList.toggle('hidden', preds.length === 0);
     preds.forEach(([cls, pct]) => {
-      const row = document.createElement('div'); row.className = 'pred-row';
-      const label = document.createElement('span'); label.className = 'pred-label'; label.textContent = cls;
-      const bg = document.createElement('div'); bg.className = 'bar-bg';
-      const bar = document.createElement('div'); bar.className = 'bar'; bar.style.width = pct + '%';
-      const val = document.createElement('span'); val.className = 'pred-pct'; val.textContent = pct + '%';
-      bg.append(bar); row.append(label, bg, val); list.append(row);
+      const row = document.createElement('div'); row.className = 'score';
+      const name = document.createElement('span'); name.textContent = cls;
+      const m = document.createElement('span'); m.className = 'meter';
+      const fill = document.createElement('span'); fill.style.width = pct + '%'; m.append(fill);
+      const v = document.createElement('span'); v.className = 'v num mono'; v.textContent = pct + '%';
+      row.append(name, m, v); list.append(row);
     });
-    box.scrollIntoView({behavior:'smooth', block:'start'});
+    showState('result');
+    if(window.innerWidth < 960) $('result-panel').scrollIntoView({behavior:'smooth', block:'start'});
   }
+
+  $('again').addEventListener('click', () => {
+    showState('empty');
+    window.scrollTo({top:0, behavior:'smooth'});
+    $('photo-input').click();
+  });
 </script>
 {% endblock %}

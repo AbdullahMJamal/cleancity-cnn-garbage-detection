@@ -8,21 +8,25 @@ manages every report from a password-protected dashboard.
 
 **Report page** (`/`)
 - Upload or drag & drop a photo (PNG / JPG / GIF / WEBP, max 16MB)
-- Instant AI result: garbage type, confidence, danger level, recommended action, score for every class
+- Classified record panel: report number, photo, garbage type, confidence, danger level, recommended action, score for every class
 - Warns when the AI is unsure (confidence below 50%)
 
-**Team dashboard** (`/team`, password protected)
-- Live stats: total, pending, in progress, resolved, high-danger open reports
-- Chart of garbage types reported, plus the model's measured accuracy
-- Filter by status / danger, search by description or type
-- Accept → Mark done, Reject, Reopen, Delete, open on Google Maps
+**Operations dashboard** (`/team`, password protected)
+- Stats: total reports (+ last 24h), pending triage (+ critical count), in progress, cleaned (+ resolution rate)
+- Search, filter by waste type / danger / status, pagination
+- Detail drawer: photo, GPS link, classification, class scores and a full **audit trail** of everything that happened to the report
+- Actions: Dispatch team → Mark cleaned, Reject, Reopen, **Re-classify** (re-runs the CNN, e.g. after retraining), Delete
+
+**Design**
+- UI follows the "Municipal Utility Interface" design system in `design/` (Google Stitch export):
+  Inter + JetBrains Mono, flat 1px borders, status-colour chips, dense data table
 
 **Under the hood**
 - Trained CNN loaded once at startup (`model/garbage_model.keras`)
 - SQLite database (unique IDs, safe with many users at once)
 - Uploaded photos are checked, resized and re-saved as JPEG (removes hidden GPS metadata)
 - CSRF protection on all team forms, secure session cookies
-- 16 automated tests (`python -m pytest`)
+- 21 automated tests (`python -m pytest`)
 
 ## Project Structure
 
@@ -38,6 +42,8 @@ cleancity_cnn/
 ├── scripts/
 │   └── prepare_dataset.py     ← Builds the training dataset from public datasets
 ├── templates/                 ← base / user / team / login pages
+├── static/img/leaf.svg        ← Logo
+├── design/                    ← Original UI design (screens, HTML mockups, DESIGN.md)
 ├── static/uploads/            ← Uploaded photos
 ├── tests/test_app.py          ← Automated tests
 └── instance/                  ← Database + secret key (created automatically, not in git)

@@ -1,262 +1,433 @@
 {% extends "base.html" %}
-{% block title %}CleanCity – Team Dashboard{% endblock %}
+{% block title %}CleanCity – Operations{% endblock %}
+{% block nav_ops %}active{% endblock %}
+{% block maxw %}1560px{% endblock %}
 {% block style %}
-  .container{max-width:980px;margin:0 auto;padding:20px 16px}
+  .crumb{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .crumb .accent{color:var(--accent);font-family:var(--mono);font-size:12px;text-transform:none;letter-spacing:-.02em;font-weight:500}
+  .updated{display:flex;align-items:center;gap:6px;color:var(--muted);align-self:flex-end}
+  .updated b{color:var(--text);font-weight:500}
 
-  /* Stats */
-  .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
-  .stat-card{background:#fff;border-radius:12px;padding:14px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-  .stat-card .num{font-size:26px;font-weight:700}
-  .stat-card .label{font-size:11px;color:var(--muted);margin-top:3px}
-  .total .num{color:var(--green)} .pending .num{color:var(--medium)} .progress .num{color:var(--blue)}
-  .done .num{color:var(--low)}    .danger .num{color:var(--high)}
+  /* Stat cards */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--border);border-radius:6px;background:var(--surface);margin:16px 0}
+  .stat{padding:12px 16px;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:4px}
+  .stat:last-child{border-right:none}
+  .stat .row{display:flex;justify-content:space-between;align-items:flex-end;gap:8px}
+  .stat .big{font-size:32px;line-height:40px;font-weight:600;letter-spacing:-.02em}
+  .stat .side{font-size:12px;color:var(--muted);padding-bottom:6px}
+  .c-crit{color:var(--crit)} .c-prog{color:var(--prog)} .c-ok{color:var(--ok)}
 
-  /* Overview: garbage types + model info */
-  .overview{display:grid;grid-template-columns:3fr 2fr;gap:16px}
-  .type-row{display:flex;align-items:center;gap:10px;font-size:13px;margin-bottom:8px}
-  .type-row .name{width:110px;color:#444}
-  .type-row .bar-bg{flex:1}
-  .type-row .cnt{width:28px;text-align:right;font-weight:600}
-  .model-stat{font-size:13px;color:#444;line-height:1.7}
-  .model-stat b{color:var(--text)}
-  .acc{font-size:30px;font-weight:700;color:var(--green)}
+  /* Toolbar */
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+  .search{position:relative;flex:1 1 260px;max-width:360px}
+  .search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted)}
+  .search input{width:100%;height:36px;padding:0 10px 0 34px}
+  .toolbar input,.toolbar select{height:36px;border:1px solid var(--border);border-radius:4px;background:var(--surface);font-size:13px}
+  .toolbar select{padding:0 28px 0 10px;cursor:pointer;appearance:none;
+     background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%231C1F1D' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center}
+  .toolbar input:hover,.toolbar select:hover{border-color:var(--border-strong)}
+  .toolbar input:focus,.toolbar select:focus{outline:none;border-color:var(--accent)}
 
-  /* Filters */
-  .toolbar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
-  .filter-btn{padding:7px 16px;border-radius:20px;border:1px solid #c8e6d8;background:#fff;
-              cursor:pointer;font-size:13px;color:#444;transition:.2s}
-  .filter-btn.active{background:var(--green);color:#fff;border-color:var(--green)}
-  .filter-btn:not(.active):hover{background:#e8f7f2}
-  .search{margin-left:auto;padding:7px 14px;border-radius:20px;border:1px solid #c8e6d8;font-size:13px;min-width:200px}
-  .search:focus{outline:none;border-color:var(--green)}
+  /* Workspace: table + drawer */
+  .workspace{display:flex;border:1px solid var(--border);border-radius:6px;background:var(--surface);min-height:520px;overflow:hidden}
+  .table-area{flex:1;min-width:0;display:flex;flex-direction:column}
+  .table-scroll{overflow-x:auto;flex:1}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  thead th{position:sticky;top:0;background:var(--canvas);border-bottom:1px solid var(--border);text-align:left;
+           padding:10px 12px;white-space:nowrap}
+  tbody tr{border-bottom:1px solid var(--divider);cursor:pointer;border-left:3px solid transparent}
+  tbody tr:hover{background:var(--hover)}
+  tbody tr.sel{background:var(--selected);border-left-color:var(--accent)}
+  td{padding:8px 12px;vertical-align:middle}
+  td.id{font-family:var(--mono);font-weight:500;white-space:nowrap}
+  td.ph img{width:48px;height:36px;object-fit:cover;border-radius:4px;border:1px solid var(--border);display:block}
+  td.type{font-weight:500;min-width:110px}
+  td.type .unsure{display:block;font-size:11px;color:var(--warn);font-weight:500}
+  td.conf{white-space:nowrap}
+  td.conf .meter{width:48px;margin-left:8px;vertical-align:middle}
+  td.loc,td.act{max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  td.when{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap}
+  tr.closed td{color:var(--muted)}
+  tr.closed td.type{color:var(--muted)}
 
-  /* Report card */
-  .report-card{background:#fff;border-radius:14px;padding:16px;margin-bottom:14px;
-               box-shadow:0 1px 4px rgba(0,0,0,.06);display:flex;gap:16px;
-               align-items:flex-start;border-left:4px solid #ddd}
-  .report-card.danger-High{border-left-color:var(--high)} .report-card.danger-Medium{border-left-color:var(--medium)}
-  .report-card.danger-Low{border-left-color:var(--low)}   .report-card.danger-None{border-left-color:#bbb}
-  .report-card.status-done,.report-card.status-rejected{opacity:.75}
+  .pager{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 16px;border-top:1px solid var(--border);flex-wrap:wrap}
+  .pages{display:flex;gap:4px}
+  .pages button{min-width:32px;height:32px;padding:0 8px;border:1px solid var(--border);background:var(--surface);border-radius:4px;cursor:pointer;font-size:13px}
+  .pages button:hover:not(:disabled){background:var(--hover)}
+  .pages button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .pages button:disabled{color:var(--disabled);cursor:default}
 
-  .report-card .photo img{width:130px;height:130px;object-fit:cover;border-radius:10px;border:1px solid #e0e0e0;display:block}
-  .report-info{flex:1;min-width:0}
-  .report-id  {font-size:11px;color:#999;margin-bottom:3px}
-  .report-desc{font-size:14px;font-weight:600;margin-bottom:6px;overflow-wrap:anywhere}
-  .report-loc {font-size:12px;color:#555;margin-bottom:3px}
-  .report-time{font-size:11px;color:#aaa;margin-bottom:10px}
+  .no-rows{padding:48px 16px;text-align:center;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:8px}
 
-  .badge{display:inline-block;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;margin:0 6px 8px 0}
-  .badge-pending{background:#fef3e2;color:#c0680a}  .badge-in_progress{background:#e3f0fb;color:#1a5f8a}
-  .badge-done{background:#e6f7ee;color:#1e7e4a}     .badge-rejected{background:#eee;color:#666}
-  .badge-unsure{background:#fff8e1;color:#7a5a00}
+  /* Drawer */
+  .drawer{width:440px;flex-shrink:0;border-left:1px solid var(--border);display:flex;flex-direction:column;background:var(--surface)}
+  .drawer-head{display:flex;align-items:center;gap:8px;padding:14px 16px;border-bottom:1px solid var(--border)}
+  .drawer-head h2{font-size:18px;line-height:24px;font-weight:600;letter-spacing:-.01em}
+  .drawer-head .x{margin-left:auto;border:none;background:none;cursor:pointer;color:var(--muted);padding:4px;border-radius:4px;display:grid}
+  .drawer-head .x:hover{background:var(--hover);color:var(--text)}
+  .drawer-body{padding:16px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:16px}
+  .photo{position:relative;border:1px solid var(--border);border-radius:4px;overflow:hidden;aspect-ratio:4/3;background:#F3F4F0}
+  .photo img{width:100%;height:100%;object-fit:cover;display:block}
+  .photo .fn{position:absolute;left:8px;top:8px;background:rgba(255,255,255,.92);border:1px solid var(--border);border-radius:4px;padding:1px 6px}
+  .photo .chip{position:absolute;right:8px;bottom:8px}
+  .photo-meta{display:flex;justify-content:space-between;color:var(--muted);margin-top:6px;gap:8px;flex-wrap:wrap}
+  .kv{border:1px solid var(--border);border-radius:4px}
+  .kv>div{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 12px;border-bottom:1px solid var(--border)}
+  .kv>div:last-child{border-bottom:none}
+  .kv .k{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.02em}
+  .kv .v{text-align:right;font-size:13px}
+  .kv .v small{display:block;color:var(--muted);font-size:12px}
+  .kv a{display:inline-flex;align-items:center;gap:4px;text-decoration:none}
+  .desc{font-size:13px;background:#F3F4F0;border:1px solid var(--border);border-radius:4px;padding:8px 12px;overflow-wrap:anywhere}
+  .score{display:grid;grid-template-columns:110px 1fr 52px;align-items:center;gap:8px;font-size:12px;padding:2px 0}
+  .score .meter{width:100%}
+  .score .v{text-align:right}
+  .trail{list-style:none;border-left:1px solid var(--border);margin-left:4px;display:flex;flex-direction:column;gap:12px}
+  .trail li{position:relative;padding-left:14px}
+  .trail li::before{content:"";position:absolute;left:-4px;top:4px;width:7px;height:7px;border-radius:50%;background:var(--muted)}
+  .trail li:last-child::before{background:var(--accent)}
+  .trail .t{display:block;color:var(--muted)}
+  .actions{display:grid;grid-template-columns:1fr auto;gap:8px;padding:12px 16px;border-top:1px solid var(--border)}
+  .actions form{display:contents}
+  .actions .more{grid-column:1/-1;display:flex;gap:8px;justify-content:space-between}
+  .actions .btn-primary{height:36px;font-size:14px}
+  .drawer-empty{flex:1;display:grid;place-items:center;color:var(--muted);padding:24px;text-align:center}
 
-  .ai-result{background:#f8f8f8;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px}
-  .ai-result-title{font-weight:600;color:#333;margin-bottom:6px;font-size:13px}
-  .ai-row{display:flex;justify-content:space-between;gap:12px;padding:2px 0}
-  .ai-label{color:#888}
-  .ai-value{font-weight:600;color:#222;text-align:right}
-  .ai-result .bar-bg{height:5px;margin:4px 0}
+  .foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:var(--muted);margin-top:12px}
+  .foot b{color:var(--text);font-weight:500}
 
-  .actions{display:flex;gap:8px;flex-wrap:wrap}
-  .actions form{display:inline}
-  .action-btn{padding:7px 14px;border-radius:8px;font-size:13px;cursor:pointer;border:1px solid #ccc;
-              background:#fff;transition:.2s;text-decoration:none;display:inline-block;color:#444}
-  .btn-accept{border-color:var(--green);color:var(--green)} .btn-accept:hover{background:var(--green);color:#fff}
-  .btn-done{border-color:var(--low);color:var(--low)}       .btn-done:hover{background:var(--low);color:#fff}
-  .btn-map{border-color:var(--blue);color:var(--blue)}      .btn-map:hover{background:var(--blue);color:#fff}
-  .btn-reject:hover,.btn-reopen:hover{background:#eee}
-  .btn-delete{border-color:#e5b5b0;color:var(--high)}       .btn-delete:hover{background:var(--high);color:#fff}
-
-  .empty{text-align:center;padding:40px;color:#999;font-size:14px}
-
-  @media(max-width:760px){
+  @media(max-width:1500px){ td.act,th.act{display:none} }
+  @media(max-width:1180px){
+    .drawer{position:fixed;inset:56px 0 0 auto;width:min(440px,100%);z-index:30;box-shadow:0 1px 3px rgba(0,0,0,.05),0 1px 2px -1px rgba(0,0,0,.05);border-left:1px solid var(--border-strong)}
+    .drawer.closed{display:none}
+  }
+  @media(max-width:900px){
     .stats{grid-template-columns:repeat(2,1fr)}
-    .stats .stat-card:first-child{grid-column:span 2}
-    .overview{grid-template-columns:1fr}
-    .report-card{flex-direction:column}
-    .report-card .photo,.report-card .photo img{width:100%}
-    .report-card .photo img{height:200px}
-    .search{margin-left:0;width:100%}
+    .stat:nth-child(2){border-right:none}
+    .stat:nth-child(-n+2){border-bottom:1px solid var(--border)}
+    td.act,th.act,td.loc,th.loc{display:none}
+  }
+  @media(max-width:560px){
+    .stat .big{font-size:24px;line-height:32px}
+    .search{max-width:none}
+    .toolbar select{flex:1}
+    td.ph,th.ph,td.when,th.when{display:none}
   }
 {% endblock %}
+
 {% block body %}
-<div class="topbar dark">
-  <div>
-    <h1>🗑️ CleanCity – Team Dashboard</h1>
-    <p>AI-powered garbage management</p>
+<input type="hidden" id="csrf" value="{{ csrf_token() }}">
+<div class="page">
+  <div class="page-head">
+    <div>
+      <div class="crumb label">SSUET Campus <span>•</span>
+        <span class="accent">Triage terminal · {% if model_trained %}MobileNetV2{% if model_info %} {{ model_info.val_accuracy }}% acc.{% endif %}{% else %}classifier offline{% endif %}</span>
+      </div>
+      <h1 style="margin-top:4px">Reports</h1>
+    </div>
+    <div class="updated mono"><span class="dot live" style="width:6px;height:6px"></span>Last updated: <b>{{ last_updated }}</b>
+      · <a href="{{ url_for('team_dashboard') }}" class="link" style="font-size:12px">Refresh</a></div>
   </div>
-  <div class="nav">
-    <a href="{{ url_for('user_home') }}">+ New Report</a>
-    <form method="POST" action="{{ url_for('team_logout') }}">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button type="submit">Log out</button>
-    </form>
-  </div>
-</div>
 
-<div class="container">
-
-  {% for msg in get_flashed_messages() %}<div class="notice ok">{{ msg }}</div>{% endfor %}
+  {% for msg in get_flashed_messages() %}<div class="notice ok" style="margin-top:16px">{{ msg }}</div>{% endfor %}
   {% if not model_trained %}
-  <div class="notice warn">⚠️ No trained AI model is loaded. New reports show type "Unknown" —
-    run <code>python train.py --data-dir dataset</code> and restart the app.</div>
+  <div class="notice warn" style="margin-top:16px">No trained AI model is loaded — new reports show type "Unknown". Run <code class="mono">python train.py --data-dir dataset</code> and restart the app.</div>
   {% endif %}
 
-  <!-- STATS -->
+  <!-- ── Stats ─────────────────────────────────────────────────────────────── -->
   <div class="stats">
-    <div class="stat-card total"><div class="num">{{ total }}</div><div class="label">Total reports</div></div>
-    <div class="stat-card pending"><div class="num">{{ pending }}</div><div class="label">Pending</div></div>
-    <div class="stat-card progress"><div class="num">{{ in_progress }}</div><div class="label">In progress</div></div>
-    <div class="stat-card done"><div class="num">{{ done }}</div><div class="label">Resolved</div></div>
-    <div class="stat-card danger"><div class="num">{{ high_danger }}</div><div class="label">🚨 High danger open</div></div>
-  </div>
-
-  <!-- OVERVIEW -->
-  <div class="overview">
-    <div class="card">
-      <div class="card-title">♻️ Garbage types reported</div>
-      {% set max_count = (type_counts | map(attribute=1) | max) if type_counts else 1 %}
-      {% for name, count in type_counts %}
-      <div class="type-row">
-        <span class="name">{{ name }}</span>
-        <div class="bar-bg"><div class="bar" style="width:{{ (count / max_count * 100) | round(1) }}%"></div></div>
-        <span class="cnt">{{ count }}</span>
-      </div>
-      {% else %}
-      <div style="font-size:13px;color:#999">No reports yet.</div>
-      {% endfor %}
+    <div class="stat">
+      <span class="label">Total reports</span>
+      <div class="row"><span class="big num">{{ total }}</span><span class="side mono">+{{ last_24h }} / 24h</span></div>
     </div>
-    <div class="card">
-      <div class="card-title">🤖 CNN model</div>
-      {% if model_trained and model_info %}
-        <div class="acc">{{ model_info.val_accuracy }}%</div>
-        <div class="model-stat">
-          validation accuracy on <b>{{ model_info.validation_images }}</b> unseen photos<br>
-          Trained on <b>{{ model_info.train_images }}</b> photos · {{ model_info.trained_at }}<br>
-          MobileNetV2 transfer learning · 7 classes
-        </div>
-      {% elif model_trained %}
-        <div class="model-stat">Trained model loaded.</div>
-      {% else %}
-        <div class="model-stat">Not trained yet.</div>
-      {% endif %}
+    <div class="stat">
+      <span class="label">Pending triage</span>
+      <div class="row"><span class="big num {% if critical %}c-crit{% endif %}">{{ pending }}</span>
+        {% if critical %}<span class="chip crit nodot" style="margin-bottom:8px">Critical {{ critical }}</span>{% endif %}</div>
+    </div>
+    <div class="stat">
+      <span class="label">In progress</span>
+      <div class="row"><span class="big num c-prog">{{ in_progress }}</span><span class="side mono">teams on site</span></div>
+    </div>
+    <div class="stat">
+      <span class="label">Resolved / cleaned</span>
+      <div class="row"><span class="big num c-ok">{{ done }}</span>
+        <span class="side mono c-ok">{% if resolution_rate is not none %}{{ resolution_rate }}% resolved{% else %}—{% endif %}</span></div>
     </div>
   </div>
 
-  <!-- FILTERS -->
+  <!-- ── Filters ───────────────────────────────────────────────────────────── -->
   <div class="toolbar">
-    <button class="filter-btn active" data-filter="all">All</button>
-    <button class="filter-btn" data-filter="pending">Pending</button>
-    <button class="filter-btn" data-filter="in_progress">In progress</button>
-    <button class="filter-btn" data-filter="done">Done</button>
-    <button class="filter-btn" data-filter="rejected">Rejected</button>
-    <button class="filter-btn" data-filter="high">🚨 High danger</button>
-    <input class="search" id="search" type="search" placeholder="🔎 Search description or type...">
+    <label class="search">
+      <svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="search" id="q" placeholder="Search by ID, location, description or waste type" aria-label="Search reports">
+    </label>
+    <select id="f-type" aria-label="Waste type">
+      <option value="all">Waste type: All</option>
+      {% for c in garbage_classes %}{% if type_counts[c] %}<option value="{{ c }}">{{ c }} ({{ type_counts[c] }})</option>{% endif %}{% endfor %}
+    </select>
+    <select id="f-danger" aria-label="Danger level">
+      <option value="all">Danger: All levels</option>
+      <option value="High">High</option><option value="Medium">Medium</option>
+      <option value="Low">Low</option><option value="None">None</option>
+    </select>
+    <select id="f-status" aria-label="Status">
+      <option value="open">Status: Open</option>
+      <option value="all">Status: All</option>
+      {% for key, label in status_labels.items() %}<option value="{{ key }}">{{ label }}</option>{% endfor %}
+    </select>
+    <button class="btn hidden" id="clear" type="button">Clear filters</button>
   </div>
 
-  <!-- REPORT CARDS -->
-  {% for r in reports %}
-  {% set ai = r.ai_result %}
-  <div class="report-card danger-{{ ai.get('danger_level','None') }} status-{{ r.status }}"
-       data-status="{{ r.status }}"
-       data-danger="{{ ai.get('danger_level','None') }}"
-       data-text="{{ (r.description ~ ' ' ~ ai.get('garbage_type','')) | lower }}">
-
-    <a class="photo" href="{{ url_for('static', filename='uploads/' ~ r.photo) }}" target="_blank" title="Open full photo">
-      <img src="{{ url_for('static', filename='uploads/' ~ r.photo) }}" alt="Garbage photo" loading="lazy">
-    </a>
-
-    <div class="report-info">
-      <div class="report-id">Report #{{ r.id }}</div>
-      <div class="report-desc">{{ r.description }}</div>
-      <div class="report-loc">📍 {{ r.address }}</div>
-      <div class="report-time">
-        🕐 {{ r.submitted_at }}{% if r.updated_at %} | Updated: {{ r.updated_at }}{% endif %}
-      </div>
-
-      <span class="badge badge-{{ r.status }}">{{ status_labels.get(r.status, r.status) }}</span>
-      {% if ai.get('uncertain') %}<span class="badge badge-unsure">🤔 AI unsure — check photo</span>{% endif %}
-
-      {% if ai %}
-      <div class="ai-result">
-        <div class="ai-result-title">🤖 CNN Analysis</div>
-        <div class="ai-row"><span class="ai-label">Type</span><span class="ai-value">{{ ai.get('garbage_type','—') }}</span></div>
-        <div class="ai-row"><span class="ai-label">Confidence</span><span class="ai-value">{{ ai.get('confidence','—') }}%</span></div>
-        <div class="bar-bg"><div class="bar{% if ai.get('uncertain') %} weak{% endif %}" style="width:{{ ai.get('confidence',0) }}%"></div></div>
-        <div class="ai-row">
-          <span class="ai-label">Danger</span>
-          <span class="ai-value danger-{{ ai.get('danger_level','None') }}">{{ ai.get('danger_level','—') }}</span>
-        </div>
-        <div class="ai-row">
-          <span class="ai-label">Action</span>
-          <span class="ai-value" style="max-width:65%;font-size:11px">{{ ai.get('recommended_action','—') }}</span>
+  <!-- ── Table + drawer ───────────────────────────────────────────────────── -->
+  <div class="workspace">
+    <div class="table-area">
+      <div class="table-scroll">
+        <table>
+          <thead><tr>
+            <th class="label">ID</th><th class="label ph">Photo</th><th class="label">Waste type</th>
+            <th class="label">Confidence</th><th class="label">Danger</th><th class="label">Status</th>
+            <th class="label loc">Description</th><th class="label when">Reported</th><th class="label act">Recommended action</th>
+          </tr></thead>
+          <tbody id="rows">
+          {% for r in reports %}
+            {% set ai = r.ai_result %}
+            <tr data-id="{{ r.id }}" data-status="{{ r.status }}" data-danger="{{ ai.get('danger_level','None') }}"
+                data-type="{{ ai.get('garbage_type','Unknown') }}"
+                data-text="{{ ('#' ~ r.id ~ ' ' ~ r.description ~ ' ' ~ r.address ~ ' ' ~ ai.get('garbage_type','')) | lower }}"
+                class="{% if r.status in ('done','rejected') %}closed{% endif %}" tabindex="0">
+              <td class="id">#{{ r.id }}</td>
+              <td class="ph"><img src="{{ r.photo_url }}" alt="" loading="lazy"></td>
+              <td class="type">{{ ai.get('garbage_type','—') }}{% if ai.get('uncertain') and ai.get('garbage_type') != 'Unknown' %}<span class="unsure">AI unsure</span>{% endif %}</td>
+              <td class="conf num">{{ ai.get('confidence', 0) | round | int }}%<span class="meter{% if ai.get('uncertain') %} weak{% endif %}"><span style="width:{{ ai.get('confidence',0) }}%"></span></span></td>
+              <td><span class="chip {{ ai.get('danger_level','None') }}">{{ ai.get('danger_level','None') }}</span></td>
+              <td><span class="chip nodot {{ r.status }}">{{ status_labels.get(r.status, r.status) }}</span></td>
+              <td class="loc" title="{{ r.description }}">{{ r.description }}</td>
+              <td class="when">{{ r.ago }}</td>
+              <td class="act">{{ ai.get('recommended_action','—') }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        <div class="no-rows hidden" id="no-rows">
+          <svg class="i" viewBox="0 0 24 24" style="width:24px;height:24px"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+          <span id="no-rows-text">No reports match the current filters.</span>
+          <button class="link" type="button" id="clear2">Clear filters</button>
         </div>
       </div>
-      {% endif %}
-
-      <div class="actions">
-        {% macro status_form(status, label, cls) %}
-        <form method="POST" action="{{ url_for('update_status') }}">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <input type="hidden" name="report_id" value="{{ r.id }}">
-          <input type="hidden" name="status" value="{{ status }}">
-          <button type="submit" class="action-btn {{ cls }}">{{ label }}</button>
-        </form>
-        {% endmacro %}
-
-        {% if r.status == 'pending' %}
-          {{ status_form('in_progress', '✅ Accept', 'btn-accept') }}
-          {{ status_form('rejected', '✖ Reject', 'btn-reject') }}
-        {% elif r.status == 'in_progress' %}
-          {{ status_form('done', '✔ Mark done', 'btn-done') }}
-        {% else %}
-          {{ status_form('pending', '↺ Reopen', 'btn-reopen') }}
-        {% endif %}
-
-        <a class="action-btn btn-map" href="https://www.google.com/maps?q={{ r.latitude }},{{ r.longitude }}"
-           target="_blank" rel="noopener">🗺 View on map</a>
-
-        <form method="POST" action="{{ url_for('delete_report') }}"
-              onsubmit="return confirm('Delete report #{{ r.id }} and its photo? This cannot be undone.')">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <input type="hidden" name="report_id" value="{{ r.id }}">
-          <button type="submit" class="action-btn btn-delete">🗑 Delete</button>
-        </form>
+      <div class="pager">
+        <span class="mono muted" id="showing"></span>
+        <div class="pages" id="pages"></div>
       </div>
     </div>
-  </div>
-  {% else %}
-  <div class="empty">📭 No reports yet. Ask users to start reporting!</div>
-  {% endfor %}
-  <div class="empty" id="no-match" style="display:none">No reports match this filter.</div>
 
+    <aside class="drawer closed" id="drawer" aria-label="Report details">
+      <div class="drawer-empty" id="drawer-empty">Select a report to see its details.</div>
+    </aside>
+  </div>
+
+  <div class="foot mono">
+    <span>Classifier: <b>MobileNetV2 transfer learning</b>{% if model_info %} · trained {{ model_info.trained_at }} on {{ model_info.train_images }} photos{% endif %}</span>
+    <span>Campus node: <b>SSUET-KHI</b></span>
+  </div>
 </div>
 
-<script>
-  let currentFilter = 'all';
+<script id="report-data" type="application/json">{{ reports | tojson }}</script>
+{% endblock %}
 
-  function applyFilters(){
-    const q = document.getElementById('search').value.trim().toLowerCase();
-    let visible = 0;
-    document.querySelectorAll('.report-card').forEach(card => {
-      const {status, danger, text} = card.dataset;
-      let ok = currentFilter === 'all'
-            || (currentFilter === 'high' ? danger === 'High' && (status === 'pending' || status === 'in_progress')
-                                         : status === currentFilter);
-      if(q && !text.includes(q)) ok = false;
-      card.style.display = ok ? 'flex' : 'none';
-      if(ok) visible++;
-    });
-    document.getElementById('no-match').style.display =
-      (visible === 0 && document.querySelectorAll('.report-card').length) ? 'block' : 'none';
+{% block scripts %}
+<script>
+(() => {
+  const PER_PAGE = 10;
+  const reports = JSON.parse(document.getElementById('report-data').textContent);
+  const byId = Object.fromEntries(reports.map(r => [r.id, r]));
+  const CSRF = document.getElementById('csrf').value;
+  const STATUS = {{ status_labels | tojson }};
+  const MODEL = {{ ({'trained': model_trained, 'acc': model_info.val_accuracy if model_info else None}) | tojson }};
+  const URLS = {status: '{{ url_for("update_status") }}', reclassify: '{{ url_for("reclassify") }}', del: '{{ url_for("delete_report") }}'};
+
+  const $ = id => document.getElementById(id);
+  const rows = [...document.querySelectorAll('#rows tr')];
+  let page = 1, selected = null;
+
+  // ── tiny DOM helper: h('div', {class:'x'}, child, 'text') ──────────────────
+  function h(tag, attrs = {}, ...kids){
+    const el = document.createElement(tag);
+    for(const [k, v] of Object.entries(attrs)){
+      if(k === 'class') el.className = v;
+      else if(k === 'style') el.style.cssText = v;
+      else if(k.startsWith('on')) el.addEventListener(k.slice(2), v);
+      else el.setAttribute(k, v);
+    }
+    kids.flat().forEach(c => c != null && el.append(c instanceof Node ? c : document.createTextNode(c)));
+    return el;
+  }
+  function icon(paths, cls = 'i sm'){
+    const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    s.setAttribute('class', cls); s.setAttribute('viewBox', '0 0 24 24');
+    s.innerHTML = paths;   // static, trusted markup only
+    return s;
+  }
+  const ICON = {
+    close: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+    ext:   '<path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
+    truck: '<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62L18.3 8.38A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/>',
+    check: '<path d="M20 6 9 17l-5-5"/>',
+    undo:  '<path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>',
+    redo:  '<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>',
+  };
+
+  // ── Filtering + pagination ─────────────────────────────────────────────────
+  const F = {q: $('q'), type: $('f-type'), danger: $('f-danger'), status: $('f-status')};
+
+  function matches(tr){
+    const q = F.q.value.trim().toLowerCase(), d = tr.dataset;
+    if(q && !d.text.includes(q)) return false;
+    if(F.type.value !== 'all' && d.type !== F.type.value) return false;
+    if(F.danger.value !== 'all' && d.danger !== F.danger.value) return false;
+    const s = F.status.value;
+    if(s === 'open') return d.status === 'pending' || d.status === 'in_progress';
+    return s === 'all' || d.status === s;
   }
 
-  document.querySelectorAll('.filter-btn').forEach(btn => btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentFilter = btn.dataset.filter;
-    applyFilters();
-  }));
-  document.getElementById('search').addEventListener('input', applyFilters);
+  function render(){
+    const visible = rows.filter(matches);
+    const pages = Math.max(1, Math.ceil(visible.length / PER_PAGE));
+    page = Math.min(page, pages);
+    const start = (page - 1) * PER_PAGE;
+    rows.forEach(tr => tr.classList.add('hidden'));
+    visible.slice(start, start + PER_PAGE).forEach(tr => tr.classList.remove('hidden'));
+
+    const filtered = F.q.value || F.type.value !== 'all' || F.danger.value !== 'all' || F.status.value !== 'open';
+    $('clear').classList.toggle('hidden', !filtered);
+    $('no-rows').classList.toggle('hidden', visible.length > 0);
+    $('clear2').classList.toggle('hidden', !filtered);
+    $('no-rows-text').textContent = rows.length === 0 ? 'No reports yet. They will appear here as soon as someone submits one.'
+                                  : 'No reports match the current filters.';
+    $('showing').textContent = visible.length
+      ? `Showing ${start + 1} to ${Math.min(start + PER_PAGE, visible.length)} of ${visible.length} reports`
+      : 'Showing 0 reports';
+
+    const pager = $('pages'); pager.replaceChildren();
+    if(pages > 1){
+      pager.append(h('button', {type:'button', onclick: () => go(page - 1), ...(page === 1 ? {disabled:''} : {})}, '‹ Previous'));
+      for(let p = 1; p <= pages; p++){
+        if(pages > 7 && Math.abs(p - page) > 2 && p !== 1 && p !== pages){
+          if(!pager.lastChild.classList.contains('gap')) pager.append(h('button', {type:'button', class:'gap', disabled:''}, '…'));
+          continue;
+        }
+        pager.append(h('button', {type:'button', class: p === page ? 'on' : '', onclick: () => go(p)}, String(p)));
+      }
+      pager.append(h('button', {type:'button', onclick: () => go(page + 1), ...(page === pages ? {disabled:''} : {})}, 'Next ›'));
+    }
+  }
+  function go(p){ page = p; render(); }
+  function reset(){ F.q.value = ''; F.type.value = 'all'; F.danger.value = 'all'; F.status.value = 'open'; page = 1; render(); }
+  F.q.addEventListener('input', () => { page = 1; render(); });
+  [F.type, F.danger, F.status].forEach(el => el.addEventListener('change', () => { page = 1; render(); }));
+  $('clear').addEventListener('click', reset);
+  $('clear2').addEventListener('click', reset);
+
+  // ── Detail drawer ──────────────────────────────────────────────────────────
+  function postForm(url, fields, label, cls, iconKey, confirmMsg){
+    const form = h('form', {method:'POST', action:url});
+    form.append(h('input', {type:'hidden', name:'csrf_token', value:CSRF}));
+    for(const [k, v] of Object.entries(fields)) form.append(h('input', {type:'hidden', name:k, value:v}));
+    if(confirmMsg) form.addEventListener('submit', e => { if(!confirm(confirmMsg)) e.preventDefault(); });
+    form.append(h('button', {type:'submit', class:'btn ' + cls}, iconKey ? icon(ICON[iconKey]) : null, label));
+    return form;
+  }
+
+  function openReport(id){
+    const r = byId[id]; if(!r) return;
+    selected = id;
+    rows.forEach(tr => tr.classList.toggle('sel', +tr.dataset.id === id));
+    const ai = r.ai_result || {};
+    const known = ai.garbage_type && ai.garbage_type !== 'Unknown';
+    const preds = Object.entries(ai.all_predictions || {}).sort((a, b) => b[1] - a[1]);
+    const drawer = $('drawer');
+
+    const primary = {
+      pending:     ['in_progress', 'Dispatch team', 'truck'],
+      in_progress: ['done', 'Mark cleaned', 'check'],
+      done:        ['pending', 'Reopen', 'undo'],
+      rejected:    ['pending', 'Reopen', 'undo'],
+    }[r.status];
+
+    drawer.replaceChildren(
+      h('div', {class:'drawer-head'},
+        h('h2', {}, `Report #${r.id} Details`),
+        h('span', {class:'chip nodot ' + r.status}, STATUS[r.status] || r.status),
+        h('button', {class:'x', type:'button', 'aria-label':'Close details', onclick: closeDrawer}, icon(ICON.close, 'i'))),
+      h('div', {class:'drawer-body'},
+        h('div', {},
+          h('a', {class:'photo', href:r.photo_url, target:'_blank', rel:'noopener', title:'Open full photo', style:'display:block'},
+            h('img', {src:r.photo_url, alt:`Photo for report ${r.id}`}),
+            h('span', {class:'fn mono'}, r.photo.slice(0, 8).toUpperCase() + '.JPG'),
+            h('span', {class:'chip ' + (ai.danger_level || 'None')}, (ai.danger_level || 'None') + (ai.danger_level === 'High' ? ' risk' : ''))),
+          h('div', {class:'photo-meta mono'}, h('span', {}, 'Source: Citizen web form'), h('span', {}, 'Metadata: stripped'))),
+        h('div', {class:'kv'},
+          h('div', {}, h('span', {class:'k'}, 'GPS Coordinates'),
+            h('a', {class:'v mono', href:`https://www.google.com/maps?q=${r.latitude},${r.longitude}`, target:'_blank', rel:'noopener'},
+              `${r.latitude}° N, ${r.longitude}° E`, icon(ICON.ext))),
+          h('div', {}, h('span', {class:'k'}, 'Classification'),
+            h('span', {class:'v'}, known ? `${ai.confidence}% ${ai.garbage_type}` : 'Not classified',
+              h('small', {}, MODEL.trained ? `MobileNetV2${MODEL.acc ? ' · ' + MODEL.acc + '% val. acc.' : ''}` : 'Model offline'))),
+          h('div', {}, h('span', {class:'k'}, 'Recommended action'), h('span', {class:'v'}, ai.recommended_action || '—')),
+          h('div', {}, h('span', {class:'k'}, 'Submitter'), h('span', {class:'v'}, 'Citizen (anonymous)')),
+          h('div', {}, h('span', {class:'k'}, 'Timestamp'), h('span', {class:'v mono'}, r.submitted_at))),
+        h('div', {}, h('div', {class:'label', style:'margin-bottom:6px'}, 'Description'), h('div', {class:'desc'}, r.description)),
+        known && ai.uncertain ? h('div', {class:'notice warn', style:'margin:0'}, 'Low confidence — verify the photo before dispatching.') : null,
+        preds.length ? h('div', {},
+          h('div', {class:'label', style:'margin-bottom:6px'}, 'Class scores'),
+          preds.map(([c, p]) => h('div', {class:'score'}, h('span', {}, c),
+            h('span', {class:'meter'}, h('span', {style:`width:${p}%`})), h('span', {class:'v mono'}, p + '%')))) : null,
+        h('div', {},
+          h('div', {class:'label', style:'margin-bottom:8px'}, 'Audit trail'),
+          h('ol', {class:'trail'}, (r.events || []).map(e =>
+            h('li', {}, h('span', {class:'t mono'}, e.at), e.message))))),
+      h('div', {class:'actions'},
+        postForm(URLS.status, {report_id:r.id, status:primary[0]}, primary[1], 'btn-primary', primary[2]),
+        postForm(URLS.reclassify, {report_id:r.id}, 'Re-classify', '', 'redo'),
+        h('div', {class:'more'},
+          ['pending','in_progress'].includes(r.status)
+            ? postForm(URLS.status, {report_id:r.id, status:'rejected'}, 'Reject report', '', null, `Reject report #${r.id} as invalid or not garbage?`)
+            : h('span'),
+          postForm(URLS.del, {report_id:r.id}, 'Delete', 'btn-danger', null, `Delete report #${r.id} and its photo? This cannot be undone.`)))
+    );
+    drawer.classList.remove('closed');
+    history.replaceState(null, '', '?open=' + id);
+  }
+
+  function closeDrawer(){
+    selected = null;
+    rows.forEach(tr => tr.classList.remove('sel'));
+    const d = $('drawer');
+    d.replaceChildren(h('div', {class:'drawer-empty'}, 'Select a report to see its details.'));
+    d.classList.add('closed');
+    history.replaceState(null, '', location.pathname);
+  }
+
+  rows.forEach(tr => {
+    tr.addEventListener('click', () => openReport(+tr.dataset.id));
+    tr.addEventListener('keydown', e => { if(e.key === 'Enter') openReport(+tr.dataset.id); });
+  });
+  document.addEventListener('keydown', e => { if(e.key === 'Escape' && selected) closeDrawer(); });
+
+  // ── Start: open ?open=ID (after an action), else the newest open report on wide screens
+  const want = +new URLSearchParams(location.search).get('open');
+  if(want && byId[want]){
+    const tr = rows.find(t => +t.dataset.id === want);
+    if(tr && !matches(tr)) F.status.value = 'all';
+    render();
+    const idx = rows.filter(matches).indexOf(tr);
+    if(idx >= 0){ page = Math.floor(idx / PER_PAGE) + 1; render(); }
+    openReport(want);
+  } else {
+    render();
+    const first = rows.find(t => !t.classList.contains('hidden'));
+    if(first && window.innerWidth > 1180) openReport(+first.dataset.id);
+  }
+})();
 </script>
 {% endblock %}

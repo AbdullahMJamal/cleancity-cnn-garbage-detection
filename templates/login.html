@@ -1,25 +1,33 @@
 {% extends "base.html" %}
-{% block title %}CleanCity – Team Login{% endblock %}
+{% block title %}CleanCity – Operations sign in{% endblock %}
+{% block nav_ops %}active{% endblock %}
 {% block style %}
-  .wrap{max-width:380px;margin:60px auto;padding:0 16px}
-  label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
-  input[type=password]{width:100%;padding:11px 14px;border-radius:10px;border:1px solid #ddd;font-size:15px;margin-bottom:14px}
-  input[type=password]:focus{outline:none;border-color:var(--green)}
-  .btn{width:100%}
+  .wrap{max-width:400px;margin:56px auto;padding:0 16px}
+  .card{padding:24px}
+  .card-head{display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--border);margin-bottom:16px}
+  h1{font-size:18px;line-height:24px;letter-spacing:-.01em}
+  label{display:block;font-size:13px;font-weight:600;margin:16px 0 4px}
+  input[type=password]{width:100%;height:36px;padding:0 10px;border:1px solid var(--border);border-radius:4px;background:var(--surface)}
+  input[type=password]:hover{border-color:var(--border-strong)}
+  input[type=password]:focus{outline:none;border-color:var(--accent)}
+  .btn-lg{margin-top:16px}
+  .fine{margin-top:12px;color:var(--muted);font-size:13px}
 {% endblock %}
 {% block body %}
-<div class="topbar dark">
-  <div><h1>🗑️ CleanCity</h1><p>Team access</p></div>
-  <div class="nav"><a href="{{ url_for('user_home') }}">← Report garbage</a></div>
-</div>
 <div class="wrap">
   {% for msg in get_flashed_messages() %}<div class="notice err">{{ msg }}</div>{% endfor %}
-  <form class="card" method="POST">
-    <div class="card-title">🔒 Team dashboard login</div>
+  <form class="panel card" method="POST">
+    <div class="card-head">
+      <span class="label">Restricted access</span>
+      <span class="mono muted">OPS-AUTH</span>
+    </div>
+    <h1>Sign in to Operations</h1>
+    <p class="lede" style="font-size:13px">The triage dashboard is for the campus cleanup team only.</p>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <label for="password">Password</label>
-    <input type="password" id="password" name="password" required autofocus>
-    <button class="btn" type="submit">Log in</button>
+    <label for="password">Team password</label>
+    <input type="password" id="password" name="password" required autofocus autocomplete="current-password">
+    <button class="btn btn-primary btn-lg" type="submit">Sign in</button>
+    <p class="fine">Want to report garbage instead? <a href="{{ url_for('user_home') }}">Go to the report form</a>.</p>
   </form>
 </div>
 {% endblock %}

@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={"darkMode":"class","theme":{"extend":{"colors":{"surface-container-highest":"#e1e3df","tertiary-container":"#784600","surface-tint":"#2e694b","background":"#f8faf6","surface-container-high":"#e7e9e5","outline":"#707972","on-secondary-fixed":"#00210f","on-tertiary":"#ffffff","on-error-container":"#93000a","surface-bright":"#f8faf6","surface-container":"#edeeeb","on-secondary":"#ffffff","on-primary-fixed":"#002112","tertiary":"#583200","tertiary-fixed":"#ffdcbd","primary-fixed":"#b1f1ca","surface-variant":"#e1e3df","secondary":"#196c40","on-surface":"#191c1a","on-primary":"#ffffff","on-secondary-container":"#1f7044","surface":"#f8faf6","on-tertiary-fixed":"#2c1600","primary-container":"#1f5c3f","outline-variant":"#c0c9c0","on-surface-variant":"#404943","inverse-surface":"#2e312f","on-primary-fixed-variant":"#115135","on-background":"#191c1a","on-tertiary-container":"#ffb669","on-tertiary-fixed-variant":"#693c00","on-primary-container":"#94d2ad","on-secondary-fixed-variant":"#00522c","primary":"#00442a","on-error":"#ffffff","error-container":"#ffdad6","secondary-fixed":"#a4f4bc","surface-container-lowest":"#ffffff","inverse-on-surface":"#f0f1ed","error":"#ba1a1a","tertiary-fixed-dim":"#ffb86e","primary-fixed-dim":"#96d4af","surface-dim":"#d9dad7","inverse-primary":"#96d4af","surface-container-low":"#f3f4f0","secondary-container":"#a1f1b9","secondary-fixed-dim":"#88d7a1"},"borderRadius":{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},"spacing":{"space-md":"0.75rem","gutter":"0.75rem","gutter-desktop":"1rem","space-xl":"1.5rem","space-sm":"0.5rem","margin":"1rem","space-xs":"0.25rem","space-lg":"1rem","margin-desktop":"1.5rem"},"fontFamily":{"label-tabular":["Inter"],"headline-sm":["Inter"],"body-md":["Inter"],"headline-lg":["Inter"],"headline-md":["Inter"],"body-lg":["Inter"],"body-sm":["Inter"],"label-uppercase":["Inter"],"code-coordinate":["JetBrains Mono"]},"fontSize":{"label-tabular":["13px",{"lineHeight":"16px","fontWeight":"500"}],"headline-sm":["15px",{"lineHeight":"20px","letterSpacing":"-0.005em","fontWeight":"600"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"headline-lg":["24px",{"lineHeight":"32px","letterSpacing":"-0.015em","fontWeight":"600"}],"headline-md":["18px",{"lineHeight":"24px","letterSpacing":"-0.01em","fontWeight":"600"}],"body-lg":["15px",{"lineHeight":"22px","fontWeight":"400"}],"body-sm":["13px",{"lineHeight":"18px","fontWeight":"400"}],"label-uppercase":["11px",{"lineHeight":"16px","letterSpacing":"0.06em","fontWeight":"600"}],"code-coordinate":["12px",{"lineHeight":"16px","letterSpacing":"-0.02em","fontWeight":"400"}]}}}}</script></head><body class="bg-background font-body-md text-on-surface antialiased"><header class="fixed top-0 left-0 right-0 z-50 bg-surface-container-lowest border-b border-surface-container-highest"><div class="h-14 max-w-[1200px] mx-auto px-gutter-desktop flex items-center justify-between"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-sm"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1VnYRu60sJucgbNuqeCGKFc7Mwi0oJb_Pb6unphoxoviOK0Tl6-rAr22nsOCmR1IaD_uxp4dLc3zTpN9HfX06AKt2WwxX3c26vtJAofF3Ezv_QpFq6ShNf5iwPdMbRdg_nIm8995xglk_A52ENmQVYt7ZM9wgHF6agox8q4Lf3Jlrr4d1UnGYnD5gu1ewtBj3R1wKUVe9K823WAW1GJH2DhgcW3PxxOxxyGAy8fzTcqVF70MeqQRiCNgYg"/><span class="font-headline-sm text-headline-sm text-on-surface">CleanCity</span></div><span class="h-4 w-px bg-outline-variant"></span><span class="font-label-uppercase text-label-uppercase text-on-surface-variant bg-surface-container-low px-space-xs py-0.5 rounded border border-outline-variant">Karachi Division</span></div><nav class="flex items-center h-14 space-x-gutter-desktop" data-active-classes="border-b-2 border-primary-container text-on-surface font-headline-sm"><a class="inline-flex items-center h-full px-space-xs text-body-md font-body-md text-outline hover:text-on-surface transition-colors border-b-2 border-transparent" data-path="report" href="#">Report</a><a aria-current="page" class="inline-flex items-center h-full px-space-xs transition-colors border-b-2 border-primary-container text-on-surface font-headline-sm" data-path="operations" href="#">Operations</a></nav></div></header><main class="w-full pt-14 bg-background min-h-[calc(100vh-56px)]"><div class="flex flex-col w-full">
+<div class="w-full max-w-[1240px] mx-auto px-space-md py-space-lg flex flex-col gap-space-md">
+<!-- Top Level Page Header -->
+<div class="flex flex-wrap items-end justify-between gap-space-sm pb-space-xs">
+<div>
+<div class="flex items-center gap-space-xs mb-1">
+<span class="font-label-uppercase text-label-uppercase text-outline tracking-wider uppercase">Karachi Metropolitan Area</span>
+<span class="w-1 h-1 rounded-full bg-outline"></span>
+<span class="font-label-uppercase text-label-uppercase text-secondary font-semibold">Triage Terminal v2.4</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Reports</h1>
+</div>
+<div class="flex items-center gap-space-xs text-outline font-code-coordinate text-code-coordinate">
+<span class="w-2 h-2 rounded-full bg-secondary inline-block animate-pulse"></span>
+<span>Last updated: <span class="font-label-tabular text-label-tabular text-on-surface">14 May 2025, 11:15 PKT</span></span>
+<span class="text-outline-variant">•</span>
+<span>Auto-refresh <span class="font-label-tabular text-label-tabular text-on-surface">30s</span></span>
+</div>
+</div>
+<!-- Compact KPI Strip -->
+<div class="w-full bg-surface-container-lowest border border-surface-container-highest rounded grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-surface-container-highest">
+<div class="p-space-md flex flex-col justify-between">
+<span class="font-label-uppercase text-label-uppercase tracking-wider text-outline uppercase">Total Reports</span>
+<div class="mt-2 flex items-baseline justify-between">
+<span class="font-headline-lg text-[28px] font-semibold text-on-surface leading-none font-label-tabular">1,284</span>
+<span class="font-label-uppercase text-label-uppercase text-outline">+14 / 24h</span>
+</div>
+</div>
+<div class="p-space-md flex flex-col justify-between">
+<span class="font-label-uppercase text-label-uppercase tracking-wider text-outline uppercase">Pending Triage</span>
+<div class="mt-2 flex items-baseline justify-between">
+<span class="font-headline-lg text-[28px] font-semibold text-error leading-none font-label-tabular">42</span>
+<span class="font-label-uppercase text-label-uppercase px-1.5 py-0.5 rounded bg-error-container text-on-error-container">Critical 7</span>
+</div>
+</div>
+<div class="p-space-md flex flex-col justify-between">
+<span class="font-label-uppercase text-label-uppercase tracking-wider text-outline uppercase">In Progress</span>
+<div class="mt-2 flex items-baseline justify-between">
+<span class="font-headline-lg text-[28px] font-semibold text-tertiary-container leading-none font-label-tabular">18</span>
+<span class="font-label-uppercase text-label-uppercase text-outline">6 teams en route</span>
+</div>
+</div>
+<div class="p-space-md flex flex-col justify-between">
+<span class="font-label-uppercase text-label-uppercase tracking-wider text-outline uppercase">Resolved / Cleaned</span>
+<div class="mt-2 flex items-baseline justify-between">
+<span class="font-headline-lg text-[28px] font-semibold text-secondary leading-none font-label-tabular">1,224</span>
+<span class="font-label-uppercase text-label-uppercase text-secondary font-semibold">95.3% SLA</span>
+</div>
+</div>
+</div>
+<!-- Operational Toolbar -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm py-1">
+<div class="flex flex-wrap items-center gap-space-sm flex-1 min-w-[280px]">
+<!-- Search -->
+<div class="relative w-full sm:w-[280px]">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
+<input class="w-full h-9 pl-9 pr-3 bg-surface-container-lowest border border-surface-container-highest rounded text-body-sm font-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:border-primary-container" id="searchInput" placeholder="Search by ID, location, or waste type..." type="text"/>
+</div>
+<!-- Filter Dropdowns -->
+<div class="relative">
+<select class="h-9 px-3 bg-surface-container-lowest border border-surface-container-highest rounded text-body-sm font-body-sm text-on-surface focus:outline-none focus:border-primary-container cursor-pointer" id="wasteFilter">
+<option value="all">Waste type: All (Plastic, Debris...)</option>
+<option value="Plastic">Plastic (Bottles/Bags)</option>
+<option value="Electronic">Electronic / Construction Debris</option>
+<option value="Organic">Organic / Market Refuse</option>
+<option value="Commercial">Mixed Commercial</option>
+<option value="Chemical">Chemical Drum / Metal</option>
+</select>
+</div>
+<div class="relative">
+<select class="h-9 px-3 bg-surface-container-lowest border border-surface-container-highest rounded text-body-sm font-body-sm text-on-surface focus:outline-none focus:border-primary-container cursor-pointer" id="dangerFilter">
+<option value="all">Danger: All levels</option>
+<option value="High">High Priority</option>
+<option value="Medium">Medium</option>
+<option value="Low">Low</option>
+</select>
+</div>
+<div class="relative">
+<select class="h-9 px-3 bg-surface-container-lowest border border-surface-container-highest rounded text-body-sm font-body-sm text-on-surface focus:outline-none focus:border-primary-container cursor-pointer" id="statusFilter">
+<option value="all">Status: All</option>
+<option value="Pending">Pending</option>
+<option value="In progress">In Progress</option>
+<option value="Cleaned">Cleaned</option>
+</select>
+</div>
+<button class="h-9 px-2 text-body-sm font-body-sm text-primary-container hover:underline hidden" id="clearFiltersBtn">
+          Reset
+        </button>
+</div>
+<!-- Segmented View Toggle -->
+<div class="flex items-center p-0.5 bg-surface-container border border-surface-container-highest rounded gap-0.5">
+<button class="h-7 px-3 flex items-center gap-1.5 bg-surface-container-lowest text-on-surface font-headline-sm text-headline-sm rounded-[3px] border border-surface-container-highest transition-all" id="viewBtnTable">
+<span class="material-symbols-outlined text-[15px]">table_rows</span>
+<span>Table</span>
+</button>
+<button class="h-7 px-3 flex items-center gap-1.5 text-outline hover:text-on-surface font-headline-sm text-headline-sm rounded-[3px] transition-all" id="viewBtnMap">
+<span class="material-symbols-outlined text-[15px]">map</span>
+<span>Map View</span>
+</button>
+</div>
+</div>
+<!-- Main Operational Workspace: Table & Docked Drawer Container -->
+<div class="w-full flex flex-col lg:flex-row items-start border border-surface-container-highest bg-surface-container-lowest rounded overflow-hidden">
+<!-- Primary Data Area (Table View) -->
+<div class="flex-1 w-full min-w-0 flex flex-col" id="tableContainer">
+<div class="overflow-x-auto w-full">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-surface-container-highest h-10">
+<th class="px-3 py-2 font-label-uppercase text-label-uppercase text-outline tracking-wider uppercase w-16">ID</th>
+<th class="px-3 py-2 font-label-uppercase text-label-uppercase text-outline tracking-wider uppercase w-14">Photo</th>
+<th class="px-3 py-2 font-label-uppercase text-label-uppercase text-outline tracking-wider uppercase">Waste Type</th>
+<th class="px-3 py-2 font-label-uppercase text-label-uppercase text-outline tracking-wider uppercase w-24">Confidence</th>
+<th class="px-3 py-2 font-label-uppercase text-label-uppercase text-outline tracking-wider uppercase w-24">Danger</th>
+<th class="px-3 py-2 font-label-uppercase text-label-uppercase text-outline tracking-wider uppercase">Location</th>
+<th class="px-3 py-2 font-label-uppercase text-label-uppercase text-outline tracking-wider uppercase w-20">Reported</th>
+<th class="px-3 py-2 font-label-uppercase text-label-uppercase text-outline tracking-wider uppercase">Recommended Action</th>
+<th class="px-3 py-2 font-label-uppercase text-label-uppercase text-outline tracking-wider uppercase text-right pr-4 w-28">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container" id="incidentTableBody">
+<!-- Row 1: Active selected item -->
+<tr class="incident-row h-12 bg-surface-container-low/40 hover:bg-surface-container-low transition-colors cursor-pointer border-l-[3px] border-l-primary-container" data-row-id="1042">
+<td class="px-3 py-1.5 font-code-coordinate text-code-coordinate text-on-surface font-semibold">#1042</td>
+<td class="px-3 py-1.5">
+<div class="w-10 h-7 rounded-[4px] border border-surface-container-highest overflow-hidden bg-surface-container flex items-center justify-center">
+<img alt="Plastic waste" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAHIVbk6cag_RUzANmrINDek6ZkR-PBRuPQlkqWfWIzKeCu0snKt86R-DEiICeMJlEBdt5N25FAiAFxohKeFDuYNTEPjrZNxqLR0XoIiFlOEIz25gASSCumN33czvF51Et4DQF9Ge2YVOqBgVNXhHd6ie1y-ebBcptIXuBIc-gTLBEkbSGfTVHOresLPJxLO4JB0epAh6TwGETqQIv_0FAn6o2t5950ghD9w7xu8Issvuc3pBGoRCV"/>
+</div>
+</td>
+<td class="px-3 py-1.5 text-body-sm font-body-sm font-medium text-on-surface">
+                  Plastic (Bottles/Bags)
+                </td>
+<td class="px-3 py-1.5">
+<div class="flex items-center gap-1.5">
+<span class="font-code-coordinate text-code-coordinate text-on-surface font-label-tabular">87%</span>
+<div class="w-10 h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="bg-primary-container h-full w-[87%]"></div>
+</div>
+</div>
+</td>
+<td class="px-3 py-1.5 whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[11px] font-medium bg-error-container text-on-error-container">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                    High
+                  </span>
+</td>
+<td class="px-3 py-1.5 text-body-sm font-body-sm text-on-surface truncate max-w-[160px]" title="Sir Syed Univ. Corner, Karachi">
+                  Sir Syed Univ. Corner, Karachi
+                </td>
+<td class="px-3 py-1.5 font-code-coordinate text-code-coordinate text-outline whitespace-nowrap">12m ago</td>
+<td class="px-3 py-1.5 text-body-sm font-body-sm text-on-surface-variant truncate max-w-[170px]">
+                  Plastic recycling sorter
+                </td>
+<td class="px-3 py-1.5 text-right pr-4">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-surface-container-highest text-body-sm font-body-sm bg-surface-container-lowest">
+<span class="w-2 h-2 rounded-full bg-tertiary-container"></span>
+<span class="text-tertiary-container font-medium text-xs">Pending</span>
+</span>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="incident-row h-12 hover:bg-surface-container-low transition-colors cursor-pointer border-l-[3px] border-l-transparent" data-row-id="1041">
+<td class="px-3 py-1.5 font-code-coordinate text-code-coordinate text-on-surface font-semibold">#1041</td>
+<td class="px-3 py-1.5">
+<div class="w-10 h-7 rounded-[4px] border border-surface-container-highest overflow-hidden bg-surface-container flex items-center justify-center">
+<img alt="Industrial debris" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXwOQLRNfKauweQvNK5j42PlEo5dYPUh0QT79k4c7IFNgXhRWtXFY7DQUobRLsAl_2Rsy5LdrXmc4VlluHAN5st3YFVA2V-eCBHTN3haB_g6G_S_DfNZxOnq0pkblHaakFyBdJfYzlMpD3Xb438wtC1mpYS20ydsAMsVoeDtDcLSFRxPOWO8km0HlZ-fvbTT4E1hiJuD6Hh44MzL7U3DS7OjZuijoqSR4SHyikNxDMvkqFA8LtvARM"/>
+</div>
+</td>
+<td class="px-3 py-1.5 text-body-sm font-body-sm text-on-surface">
+                  Electronic / Construction Debris
+                </td>
+<td class="px-3 py-1.5">
+<div class="flex items-center gap-1.5">
+<span class="font-code-coordinate text-code-coordinate text-on-surface font-label-tabular">94%</span>
+<div class="w-10 h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="bg-primary-container h-full w-[94%]"></div>
+</div>
+</div>
+</td>
+<td class="px-3 py-1.5 whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[11px] font-medium bg-[#FFF8E1] text-tertiary-container border border-tertiary-fixed">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-container"></span>
+                    Medium
+                  </span>
+</td>
+<td class="px-3 py-1.5 text-body-sm font-body-sm text-on-surface truncate max-w-[160px]" title="Hub River Rd, SITE Area">
+                  Hub River Rd, SITE Area
+                </td>
+<td class="px-3 py-1.5 font-code-coordinate text-code-coordinate text-outline whitespace-nowrap">1h ago</td>
+<td class="px-3 py-1.5 text-body-sm font-body-sm text-on-surface-variant truncate max-w-[170px]">
+                  Heavy debris truck 4T
+                </td>
+<td class="px-3 py-1.5 text-right pr-4">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-surface-container-highest text-body-sm font-body-sm bg-surface-container-lowest">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<span class="text-primary-container font-medium text-xs">In progress</span>
+</span>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="incident-row h-12 hover:bg-surface-container-low transition-colors cursor-pointer border-l-[3px] border-l-transparent" data-row-id="1040">
+<td class="px-3 py-1.5 font-code-coordinate text-code-coordinate text-on-surface font-semibold">#1040</td>
+<td class="px-3 py-1.5">
+<div class="w-10 h-7 rounded-[4px] border border-surface-container-highest overflow-hidden bg-surface-container flex items-center justify-center">
+<img alt="Market Refuse" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBaaOU4qxjTBaMzqIf2rXcL8gmXRzdrShmUciwdE5-OU46buyIDEW2jfUOkPahGnZ6xHUaCnn5lwFgn0DVn0m9z7zE_1lt-3-dPFk6h9L278eSmVbX4lrjLyLtoNGErpmGYo4Y7xP7pgPYW5CDZgCp-9NVuG0PT33GzQ1t13CVE4mHwSAJwsTwJiMUovYW4mbR7ULePGBAkLBodsf6jvnbdDvQ6eMzvmoMhLmWeUP1fjGVVbTMw281B"/>
+</div>
+</td>
+<td class="px-3 py-1.5 text-body-sm font-body-sm text-on-surface">
+                  Organic / Market Refuse
+                </td>
+<td class="px-3 py-1.5">
+<div class="flex items-center gap-1.5">
+<span class="font-code-coordinate text-code-coordinate text-on-surface font-label-tabular">91%</span>
+<div class="w-10 h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="bg-primary-container h-full w-[91%]"></div>
+</div>
+</div>
+</td>
+<td class="px-3 py-1.5 whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[11px] font-medium bg-surface-container text-outline">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                    Low
+                  </span>
+</td>
+<td class="px-3 py-1.5 text-body-sm font-body-sm text-on-surface truncate max-w-[160px]" title="Empress Market, Saddar">
+                  Empress Market, Saddar
+                </td>
+<td class="px-3 py-1.5 font-code-coordinate text-code-coordinate text-outline whitespace-nowrap">3h ago</td>
+<td class="px-3 py-1.5 text-body-sm font-body-sm text-on-surface-variant truncate max-w-[170px]">
+                  Compost transfer facility
+                </td>
+<td class="px-3 py-1.5 text-right pr-4">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-surface-container-highest text-body-sm font-body-sm bg-surface-container-lowest">
+<span class="w-2 h-2 rounded-full bg-tertiary-container"></span>
+<span class="text-tertiary-container font-medium text-xs">Pending</span>
+</span>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="incident-row h-12 hover:bg-surface-container-low transition-colors cursor-pointer border-l-[3px] border-l-transparent" data-row-id="1039">
+<td class="px-3 py-1.5 font-code-coordinate text-code-coordinate text-on-surface font-semibold">#1039</td>
+<td class="px-3 py-1.5">
+<div class="w-10 h-7 rounded-[4px] border border-surface-container-highest overflow-hidden bg-surface-container flex items-center justify-center">
+<img alt="Commercial litter" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAHIVbk6cag_RUzANmrINDek6ZkR-PBRuPQlkqWfWIzKeCu0snKt86R-DEiICeMJlEBdt5N25FAiAFxohKeFDuYNTEPjrZNxqLR0XoIiFlOEIz25gASSCumN33czvF51Et4DQF9Ge2YVOqBgVNXhHd6ie1y-ebBcptIXuBIc-gTLBEkbSGfTVHOresLPJxLO4JB0epAh6TwGETqQIv_0FAn6o2t5950ghD9w7xu8Issvuc3pBGoRCV"/>
+</div>
+</td>
+<td class="px-3 py-1.5 text-body-sm font-body-sm text-on-surface">
+                  Mixed Commercial
+                </td>
+<td class="px-3 py-1.5">
+<div class="flex items-center gap-1.5">
+<span class="font-code-coordinate text-code-coordinate text-on-surface font-label-tabular">76%</span>
+<div class="w-10 h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="bg-primary-container h-full w-[76%]"></div>
+</div>
+</div>
+</td>
+<td class="px-3 py-1.5 whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[11px] font-medium bg-[#EDF7ED] text-secondary border border-secondary-fixed">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                    Low
+                  </span>
+</td>
+<td class="px-3 py-1.5 text-body-sm font-body-sm text-on-surface truncate max-w-[160px]" title="Shahrah-e-Faisal">
+                  Shahrah-e-Faisal
+                </td>
+<td class="px-3 py-1.5 font-code-coordinate text-code-coordinate text-outline whitespace-nowrap">Yesterday</td>
+<td class="px-3 py-1.5 text-body-sm font-body-sm text-on-surface-variant truncate max-w-[170px]">
+                  Standard collection
+                </td>
+<td class="px-3 py-1.5 text-right pr-4">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-surface-container-highest text-body-sm font-body-sm bg-surface-container-lowest">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="text-secondary font-medium text-xs">Cleaned</span>
+</span>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="incident-row h-12 hover:bg-surface-container-low transition-colors cursor-pointer border-l-[3px] border-l-transparent" data-row-id="1038">
+<td class="px-3 py-1.5 font-code-coordinate text-code-coordinate text-on-surface font-semibold">#1038</td>
+<td class="px-3 py-1.5">
+<div class="w-10 h-7 rounded-[4px] border border-surface-container-highest overflow-hidden bg-surface-container flex items-center justify-center">
+<img alt="Industrial hazard" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXwOQLRNfKauweQvNK5j42PlEo5dYPUh0QT79k4c7IFNgXhRWtXFY7DQUobRLsAl_2Rsy5LdrXmc4VlluHAN5st3YFVA2V-eCBHTN3haB_g6G_S_DfNZxOnq0pkblHaakFyBdJfYzlMpD3Xb438wtC1mpYS20ydsAMsVoeDtDcLSFRxPOWO8km0HlZ-fvbTT4E1hiJuD6Hh44MzL7U3DS7OjZuijoqSR4SHyikNxDMvkqFA8LtvARM"/>
+</div>
+</td>
+<td class="px-3 py-1.5 text-body-sm font-body-sm text-on-surface">
+                  Chemical Drum / Metal
+                </td>
+<td class="px-3 py-1.5">
+<div class="flex items-center gap-1.5">
+<span class="font-code-coordinate text-code-coordinate text-on-surface font-label-tabular">89%</span>
+<div class="w-10 h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="bg-primary-container h-full w-[89%]"></div>
+</div>
+</div>
+</td>
+<td class="px-3 py-1.5 whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[11px] font-medium bg-error-container text-on-error-container">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                    High
+                  </span>
+</td>
+<td class="px-3 py-1.5 text-body-sm font-body-sm text-on-surface truncate max-w-[160px]" title="Korangi Industrial Area">
+                  Korangi Industrial Area
+                </td>
+<td class="px-3 py-1.5 font-code-coordinate text-code-coordinate text-outline whitespace-nowrap">2d ago</td>
+<td class="px-3 py-1.5 text-body-sm font-body-sm text-on-surface-variant truncate max-w-[170px]">
+                  Hazardous disposal unit
+                </td>
+<td class="px-3 py-1.5 text-right pr-4">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-surface-container-highest text-body-sm font-body-sm bg-surface-container-lowest">
+<span class="w-2 h-2 rounded-full bg-tertiary-container"></span>
+<span class="text-tertiary-container font-medium text-xs">Pending</span>
+</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Empty Filter State Notice (Hidden by default) -->
+<div class="hidden p-8 flex flex-col items-center justify-center text-center" id="emptyNotice">
+<span class="material-symbols-outlined text-[32px] text-outline mb-2">filter_alt_off</span>
+<p class="font-body-md text-body-md text-outline">
+            No reports match the current filters. 
+            <button class="text-primary-container font-semibold hover:underline ml-1" id="inlineResetBtn">Clear filters</button>
+</p>
+</div>
+<!-- Table Footer / Pagination -->
+<div class="h-11 px-3 border-t border-surface-container-highest bg-surface-container-lowest flex items-center justify-between">
+<span class="text-body-sm font-body-sm text-outline font-code-coordinate">
+            Showing <span class="font-medium text-on-surface font-label-tabular">1</span> to <span class="font-medium text-on-surface font-label-tabular">5</span> of <span class="font-medium text-on-surface font-label-tabular">42</span> pending reports
+          </span>
+<div class="flex items-center gap-1">
+<button class="h-7 px-2 border border-surface-container-highest text-outline text-body-sm rounded hover:bg-surface-container-low transition-colors disabled:opacity-40" disabled="">
+              &lt; Previous
+            </button>
+<button class="h-7 w-7 border border-primary-container bg-primary-container text-on-primary text-body-sm font-medium rounded flex items-center justify-center font-label-tabular">
+              1
+            </button>
+<button class="h-7 w-7 border border-surface-container-highest text-on-surface text-body-sm rounded hover:bg-surface-container-low flex items-center justify-center font-label-tabular transition-colors">
+              2
+            </button>
+<button class="h-7 w-7 border border-surface-container-highest text-on-surface text-body-sm rounded hover:bg-surface-container-low flex items-center justify-center font-label-tabular transition-colors">
+              3
+            </button>
+<button class="h-7 px-2 border border-surface-container-highest text-on-surface text-body-sm rounded hover:bg-surface-container-low transition-colors">
+              Next &gt;
+            </button>
+</div>
+</div>
+</div>
+<!-- Secondary Map Canvas (Toggleable) -->
+<div class="hidden flex-1 w-full p-space-md flex flex-col gap-space-sm bg-surface-container-low" id="mapContainer">
+<div class="flex items-center justify-between bg-surface-container-lowest p-2 border border-surface-container-highest rounded">
+<div class="flex items-center gap-2">
+<span class="font-label-uppercase text-label-uppercase text-outline">Karachi Metro Heat Layer</span>
+<span class="text-code-coordinate text-code-coordinate text-on-surface-variant font-code-coordinate">[24.8607° N, 67.0011° E]</span>
+</div>
+<div class="flex items-center gap-3 text-body-sm text-outline">
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-error"></span> High Risk</span>
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-tertiary-container"></span> Medium</span>
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-secondary"></span> Cleaned</span>
+</div>
+</div>
+<!-- Cartographic Schematic Vector Layer -->
+<div class="w-full h-[450px] bg-surface-container-lowest border border-surface-container-highest rounded relative overflow-hidden flex items-center justify-center">
+<svg class="w-full h-full text-surface-container-highest" fill="none" viewbox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+<!-- Simplified Karachi District Polygons -->
+<path d="M 60 400 L 150 420 L 260 380 L 320 410 L 450 430 L 600 390 L 720 440 L 780 480" fill="none" stroke="currentColor" stroke-dasharray="4 4" stroke-width="2"></path>
+<path d="M 120 180 L 220 140 L 340 160 L 480 110 L 620 130 L 750 200 L 720 320 L 590 310 L 480 340 L 320 330 L 220 350 L 120 280 Z" fill="#F3F4F0" stroke="#E1E3DF" stroke-width="1.5"></path>
+<!-- Major Arterials (Shahrah-e-Faisal / Lyari Expressway / Hub River) -->
+<path d="M 150 240 Q 300 220 440 250 T 700 240" fill="none" stroke="#C0C9C0" stroke-width="2.5"></path>
+<path d="M 280 140 L 380 380" fill="none" stroke="#C0C9C0" stroke-width="2"></path>
+<path d="M 450 120 L 460 340" fill="none" stroke="#C0C9C0" stroke-width="1.5"></path>
+<text fill="#707972" font-family="Inter" font-size="11" font-weight="600" x="210" y="170">SITE AREA</text>
+<text fill="#707972" font-family="Inter" font-size="11" font-weight="600" x="350" y="270">SADDAR / EMPRESS</text>
+<text fill="#707972" font-family="Inter" font-size="11" font-weight="600" x="490" y="220">GULSHAN / SSUET</text>
+<text fill="#707972" font-family="Inter" font-size="11" font-weight="600" x="560" y="320">KORANGI INDUSTRIAL</text>
+</svg>
+<!-- Dynamic Operational Map Markers -->
+<div class="absolute left-[62%] top-[42%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group cursor-pointer">
+<span class="px-1.5 py-0.5 rounded bg-error text-white font-code-coordinate text-[10px] font-bold shadow-sm">#1042</span>
+<div class="w-3.5 h-3.5 rounded bg-error border-2 border-white ring-2 ring-error/30 animate-pulse"></div>
+<span class="font-headline-sm text-[11px] bg-white px-1.5 py-0.5 border border-surface-container-highest rounded text-on-surface mt-1 whitespace-nowrap shadow-sm">SSUET Corner (Plastic)</span>
+</div>
+<div class="absolute left-[28%] top-[34%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group cursor-pointer">
+<span class="px-1 py-0.5 rounded bg-tertiary-container text-white font-code-coordinate text-[9px]">#1041</span>
+<div class="w-2.5 h-2.5 rounded bg-tertiary-container border border-white"></div>
+<span class="text-[10px] bg-white/90 px-1 rounded text-on-surface mt-0.5">SITE Hub Rd</span>
+</div>
+<div class="absolute left-[44%] top-[54%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group cursor-pointer">
+<span class="px-1 py-0.5 rounded bg-outline text-white font-code-coordinate text-[9px]">#1040</span>
+<div class="w-2.5 h-2.5 rounded bg-outline border border-white"></div>
+<span class="text-[10px] bg-white/90 px-1 rounded text-on-surface mt-0.5">Empress Market</span>
+</div>
+<div class="absolute left-[70%] top-[64%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group cursor-pointer">
+<span class="px-1 py-0.5 rounded bg-error text-white font-code-coordinate text-[9px]">#1038</span>
+<div class="w-2.5 h-2.5 rounded bg-error border border-white"></div>
+<span class="text-[10px] bg-white/90 px-1 rounded text-on-surface mt-0.5">Korangi Sector 4</span>
+</div>
+<div class="absolute left-[52%] top-[48%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group cursor-pointer">
+<span class="px-1 py-0.5 rounded bg-secondary text-white font-code-coordinate text-[9px]">#1039</span>
+<div class="w-2.5 h-2.5 rounded bg-secondary border border-white"></div>
+<span class="text-[10px] bg-white/90 px-1 rounded text-secondary mt-0.5 font-medium">Cleaned</span>
+</div>
+</div>
+</div>
+<!-- Right-Side Detail Docked Drawer (380px) -->
+<aside class="w-full lg:w-[380px] shrink-0 border-t lg:border-t-0 lg:border-l border-surface-container-highest bg-surface-container-lowest flex flex-col" id="detailDrawer">
+<!-- Drawer Header -->
+<div class="h-12 px-4 border-b border-surface-container-highest flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm text-on-surface">Report #1042 Details</span>
+<span class="px-1.5 py-0.5 rounded text-[11px] font-medium bg-[#FFF8E1] text-tertiary-container border border-tertiary-fixed">
+              Pending Triage
+            </span>
+</div>
+<button class="text-outline hover:text-on-surface p-1 rounded hover:bg-surface-container-low transition-colors" id="closeDrawerBtn">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<!-- Drawer Content -->
+<div class="p-4 flex flex-col gap-4">
+<!-- Full Photo Preview -->
+<div class="w-full flex flex-col gap-1.5">
+<div class="relative w-full h-48 rounded border border-surface-container-highest overflow-hidden bg-surface-container-low group">
+<img alt="Documented waste spot" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAHIVbk6cag_RUzANmrINDek6ZkR-PBRuPQlkqWfWIzKeCu0snKt86R-DEiICeMJlEBdt5N25FAiAFxohKeFDuYNTEPjrZNxqLR0XoIiFlOEIz25gASSCumN33czvF51Et4DQF9Ge2YVOqBgVNXhHd6ie1y-ebBcptIXuBIc-gTLBEkbSGfTVHOresLPJxLO4JB0epAh6TwGETqQIv_0FAn6o2t5950ghD9w7xu8Issvuc3pBGoRCV"/>
+<div class="absolute top-2 left-2 bg-surface-container-lowest/90 px-1.5 py-0.5 rounded text-[10px] font-code-coordinate text-on-surface border border-surface-container-highest">
+                IMG_REC_1042.JPG
+              </div>
+<div class="absolute bottom-2 right-2 bg-surface-container-lowest/90 px-2 py-0.5 rounded text-[11px] font-medium text-error flex items-center gap-1 border border-surface-container-highest">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span> High Risk
+              </div>
+</div>
+<div class="flex justify-between items-center text-[11px] font-code-coordinate text-outline">
+<span>Cam Ref: Mobile PWA v1.8</span>
+<span>Metadata: EXIF Verified</span>
+</div>
+</div>
+<!-- Metadata Spec Grid -->
+<div class="border border-surface-container-highest rounded divide-y divide-surface-container bg-surface-container-lowest">
+<div class="p-2.5 flex items-center justify-between text-body-sm">
+<span class="text-outline font-label-uppercase text-label-uppercase">GPS Coordinates</span>
+<a class="font-code-coordinate text-code-coordinate text-primary-container font-medium hover:underline flex items-center gap-1" href="#">
+<span>24.9200° N, 67.0650° E</span>
+<span class="material-symbols-outlined text-[14px]">open_in_new</span>
+</a>
+</div>
+<div class="p-2.5 flex items-center justify-between text-body-sm">
+<span class="text-outline font-label-uppercase text-label-uppercase">Classification</span>
+<span class="text-on-surface font-medium text-right">87% Plastic Waste <span class="text-outline text-xs block font-normal">Model v2.4-Gov</span></span>
+</div>
+<div class="p-2.5 flex items-center justify-between text-body-sm">
+<span class="text-outline font-label-uppercase text-label-uppercase">Submitter</span>
+<span class="text-on-surface">Citizen App (Anonymous)</span>
+</div>
+<div class="p-2.5 flex items-center justify-between text-body-sm">
+<span class="text-outline font-label-uppercase text-label-uppercase">Timestamp</span>
+<span class="text-on-surface font-code-coordinate text-code-coordinate">14 May 2025, 11:06 PKT</span>
+</div>
+</div>
+<!-- Status Timeline / Audit Trail -->
+<div class="flex flex-col gap-2">
+<span class="font-label-uppercase text-label-uppercase text-outline tracking-wider uppercase">Audit Trail &amp; Telemetry</span>
+<div class="pl-2 border-l-2 border-surface-container-highest flex flex-col gap-3 ml-1 py-1">
+<div class="relative flex flex-col text-body-sm">
+<span class="absolute -left-[13px] top-1 w-2 h-2 rounded-full bg-outline"></span>
+<span class="font-code-coordinate text-[11px] text-outline">11:06 PKT</span>
+<span class="text-on-surface text-xs mt-0.5">Report submitted by citizen via mobile interface</span>
+</div>
+<div class="relative flex flex-col text-body-sm">
+<span class="absolute -left-[13px] top-1 w-2 h-2 rounded-full bg-outline"></span>
+<span class="font-code-coordinate text-[11px] text-outline">11:06 PKT</span>
+<span class="text-on-surface text-xs mt-0.5">ML Vision model classified: Plastic (87% conf., High danger)</span>
+</div>
+<div class="relative flex flex-col text-body-sm">
+<span class="absolute -left-[13px] top-1 w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-code-coordinate text-[11px] text-secondary font-medium">11:12 PKT</span>
+<span class="text-on-surface text-xs mt-0.5 font-medium">Auto-routed to East District Squad #3</span>
+</div>
+</div>
+</div>
+<!-- Action Control Bar -->
+<div class="pt-2 border-t border-surface-container-highest flex items-center gap-2">
+<button class="flex-1 h-8 px-3 bg-primary-container hover:bg-primary text-on-primary text-body-sm font-medium rounded transition-colors flex items-center justify-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">local_shipping</span>
+<span>Dispatch Team</span>
+</button>
+<button class="h-8 px-3 bg-surface-container-lowest hover:bg-surface-container-low border border-surface-container-highest text-on-surface text-body-sm font-medium rounded transition-colors">
+              Re-classify
+            </button>
+</div>
+</div>
+</aside>
+</div>
+<!-- District Operations Context Footer Note -->
+<div class="flex items-center justify-between text-body-sm text-outline px-1">
+<div class="flex items-center gap-2">
+<span class="font-code-coordinate text-[11px]">SINDH SOLID WASTE MANAGEMENT BOARD (SSWMB) PROTOCOL</span>
+<span>•</span>
+<span class="text-xs">Gulshan Zone 4 Dispatch Active</span>
+</div>
+<div class="text-xs">
+        System Node: <span class="font-code-coordinate text-on-surface">KHI-CENTRAL-09</span>
+</div>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    // Shell active link highlighter
+    const navLinks = document.querySelectorAll('nav a');
+    navLinks.forEach(link => {
+      if (link.getAttribute('data-path') === 'operations') {
+        link.className = "inline-flex items-center h-full px-space-xs text-on-surface font-headline-sm border-b-2 border-primary-container";
+      } else {
+        link.className = "inline-flex items-center h-full px-space-xs text-body-md font-body-md text-outline hover:text-on-surface transition-colors border-b-2 border-transparent";
+      }
+    });
+
+    // View switcher (Table / Map)
+    const viewBtnTable = document.getElementById('viewBtnTable');
+    const viewBtnMap = document.getElementById('viewBtnMap');
+    const tableContainer = document.getElementById('tableContainer');
+    const mapContainer = document.getElementById('mapContainer');
+
+    viewBtnTable.addEventListener('click', () => {
+      tableContainer.classList.remove('hidden');
+      mapContainer.classList.add('hidden');
+      viewBtnTable.className = 'h-7 px-3 flex items-center gap-1.5 bg-surface-container-lowest text-on-surface font-headline-sm text-headline-sm rounded-[3px] border border-surface-container-highest transition-all';
+      viewBtnMap.className = 'h-7 px-3 flex items-center gap-1.5 text-outline hover:text-on-surface font-headline-sm text-headline-sm rounded-[3px] transition-all';
+    });
+
+    viewBtnMap.addEventListener('click', () => {
+      tableContainer.classList.add('hidden');
+      mapContainer.classList.remove('hidden');
+      viewBtnMap.className = 'h-7 px-3 flex items-center gap-1.5 bg-surface-container-lowest text-on-surface font-headline-sm text-headline-sm rounded-[3px] border border-surface-container-highest transition-all';
+      viewBtnTable.className = 'h-7 px-3 flex items-center gap-1.5 text-outline hover:text-on-surface font-headline-sm text-headline-sm rounded-[3px] transition-all';
+    });
+
+    // Side Drawer Toggle
+    const closeDrawerBtn = document.getElementById('closeDrawerBtn');
+    const detailDrawer = document.getElementById('detailDrawer');
+    closeDrawerBtn.addEventListener('click', () => {
+      detailDrawer.classList.toggle('hidden');
+    });
+
+    // Row selection micro-interaction
+    const rows = document.querySelectorAll('.incident-row');
+    rows.forEach(row => {
+      row.addEventListener('click', () => {
+        rows.forEach(r => {
+          r.classList.remove('border-l-primary-container', 'bg-surface-container-low/40');
+          r.classList.add('border-l-transparent');
+        });
+        row.classList.remove('border-l-transparent');
+        row.classList.add('border-l-primary-container', 'bg-surface-container-low/40');
+        if (detailDrawer.classList.contains('hidden')) {
+          detailDrawer.classList.remove('hidden');
+        }
+      });
+    });
+
+    // Search and filtering emulation
+    const searchInput = document.getElementById('searchInput');
+    const wasteFilter = document.getElementById('wasteFilter');
+    const dangerFilter = document.getElementById('dangerFilter');
+    const statusFilter = document.getElementById('statusFilter');
+    const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+    const inlineResetBtn = document.getElementById('inlineResetBtn');
+    const emptyNotice = document.getElementById('emptyNotice');
+    const tbody = document.getElementById('incidentTableBody');
+
+    function applyFilters() {
+      const q = searchInput.value.toLowerCase().trim();
+      const w = wasteFilter.value;
+      const d = dangerFilter.value;
+      const s = statusFilter.value;
+
+      let visibleCount = 0;
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        let matches = true;
+
+        if (q && !text.includes(q)) matches = false;
+        if (w !== 'all' && !text.includes(w.toLowerCase())) matches = false;
+        if (d !== 'all' && !text.includes(d.toLowerCase())) matches = false;
+        if (s !== 'all' && !text.includes(s.toLowerCase())) matches = false;
+
+        if (matches) {
+          row.style.display = '';
+          visibleCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      const isFiltered = (q !== '' || w !== 'all' || d !== 'all' || s !== 'all');
+      if (isFiltered) {
+        clearFiltersBtn.classList.remove('hidden');
+      } else {
+        clearFiltersBtn.classList.add('hidden');
+      }
+
+      if (visibleCount === 0) {
+        emptyNotice.classList.remove('hidden');
+        tbody.classList.add('hidden');
+      } else {
+        emptyNotice.classList.add('hidden');
+        tbody.classList.remove('hidden');
+      }
+    }
+
+    function resetFilters() {
+      searchInput.value = '';
+      wasteFilter.value = 'all';
+      dangerFilter.value = 'all';
+      statusFilter.value = 'all';
+      applyFilters();
+    }
+
+    searchInput.addEventListener('input', applyFilters);
+    wasteFilter.addEventListener('change', applyFilters);
+    dangerFilter.addEventListener('change', applyFilters);
+    statusFilter.addEventListener('change', applyFilters);
+    clearFiltersBtn.addEventListener('click', resetFilters);
+    inlineResetBtn.addEventListener('click', resetFilters);
+  })();
+</script></main><footer class="w-full bg-surface-container-lowest border-t border-surface-container-highest py-space-md"><div class="max-w-[1200px] mx-auto px-gutter-desktop text-center"><p class="font-code-coordinate text-code-coordinate text-outline">Sir Syed University of Engineering &amp; Technology, student project.</p></div></footer></body></html>

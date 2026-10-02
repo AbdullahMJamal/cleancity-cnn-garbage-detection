@@ -130,8 +130,9 @@ def test_login_and_dashboard(client):
     login(client)
     res = client.get("/team")
     assert res.status_code == 200
-    assert b"Report #1" in res.data
+    assert b"#1" in res.data
     assert b"Plastic" in res.data
+    assert b"Pending triage" in res.data
 
 
 def test_update_status(client):
@@ -194,3 +195,47 @@ def test_legacy_json_is_imported(tmp_path, monkeypatch):
     reports = client.get("/api/reports").get_json()
     assert reports[0]["description"] == "old report" and reports[0]["status"] == "done"
     assert not legacy.exists()   # renamed to reports.json.imported
+
+
+def test_submit_response_has_display_fields(client):
+    data = submit(client).get_json()
+    assert data["photo_url"].startswith("/static/uploads/")
+    assert data["submitted_at"]
+
+
+def test_audit_trail_records_actions(client):
+    submit(client)
+    login(client)
+    token = csrf(client)
+    client.post("/update_status", data={"report_id": 1, "status": "in_progress", "csrf_token": token})
+    client.post("/update_status", data={"report_id": 1, "status": "done", "csrf_token": token})
+    html = client.get("/team").get_data(as_text=True)
+    for msg in ["Report submitted by citizen", "CNN classified: Plastic", "Cleanup team dispatched",
+                "Site marked as cleaned"]:
+        assert msg in html
+
+
+def test_reclassify_updates_result(client, monkeypatch):
+    submit(client)
+    login(client)
+    new = dict(FAKE_RESULT, garbage_type="Glass", confidence=77.0)
+    monkeypatch.setattr(app_module, "predict_garbage", lambda image_bytes, model: new)
+    token = csrf(client)
+    res = client.post("/reclassify", data={"report_id": 1, "csrf_token": token})
+    assert res.status_code == 302 and "open=1" in res.headers["Location"]
+    report = client.get("/api/reports").get_json()[0]
+    assert report["ai_result"]["garbage_type"] == "Glass"
+    assert "Re-classified" in client.get("/team").get_data(as_text=True)
+
+
+def test_reclassify_unknown_report(client):
+    login(client)
+    token = csrf(client)
+    assert client.post("/reclassify", data={"report_id": 42, "csrf_token": token}).status_code == 404
+
+
+def test_team_html_escapes_user_text(client):
+    submit(client, description="<script>alert(1)</script>")
+    login(client)
+    html = client.get("/team").get_data(as_text=True)
+    assert "<script>alert(1)</script>" not in html

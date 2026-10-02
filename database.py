@@ -27,7 +27,22 @@ CREATE TABLE IF NOT EXISTS reports (
     updated_at   TEXT,
     ai_result    TEXT NOT NULL            -- CNN result stored as JSON text
 );
+
+-- Audit trail: one row for everything that happens to a report
+CREATE TABLE IF NOT EXISTS events (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    report_id  INTEGER NOT NULL,
+    at         TEXT NOT NULL,
+    message    TEXT NOT NULL
+);
 """
+
+STATUS_EVENTS = {
+    "pending":     "Report reopened — back in triage queue",
+    "in_progress": "Cleanup team dispatched",
+    "done":        "Site marked as cleaned",
+    "rejected":    "Report rejected by team",
+}
 
 
 def now():
@@ -63,11 +78,37 @@ class ReportDB:
             row = conn.execute('SELECT * FROM reports WHERE id = ?', (report_id,)).fetchone()
         return self._to_dict(row) if row else None
 
+    def events(self, report_id):
+        with self._connect() as conn:
+            rows = conn.execute('SELECT at, message FROM events WHERE report_id = ? ORDER BY id',
+                                (report_id,)).fetchall()
+        return [dict(r) for r in rows]
+
+    def all_events(self):
+        """All audit-trail entries grouped by report id: {report_id: [events...]}"""
+        grouped = {}
+        with self._connect() as conn:
+            for r in conn.execute('SELECT report_id, at, message FROM events ORDER BY id'):
+                grouped.setdefault(r['report_id'], []).append({'at': r['at'], 'message': r['message']})
+        return grouped
+
     def count(self):
         with self._connect() as conn:
             return conn.execute('SELECT COUNT(*) FROM reports').fetchone()[0]
 
     # ── Write ─────────────────────────────────────────────────────────────────
+    @staticmethod
+    def _log(conn, report_id, message, at=None):
+        conn.execute('INSERT INTO events (report_id, at, message) VALUES (?,?,?)',
+                     (report_id, at or now(), message))
+
+    @staticmethod
+    def describe_ai(ai_result):
+        if ai_result.get('garbage_type', 'Unknown') == 'Unknown':
+            return 'AI model unavailable — manual inspection needed'
+        return (f"CNN classified: {ai_result['garbage_type']} "
+                f"({ai_result['confidence']}% confidence, {ai_result['danger_level']} danger)")
+
     def add(self, photo, latitude, longitude, address, description, ai_result,
             status='pending', submitted_at=None, updated_at=None):
         with self._connect() as conn:
@@ -76,7 +117,13 @@ class ReportDB:
                 ' status, submitted_at, updated_at, ai_result) VALUES (?,?,?,?,?,?,?,?,?)',
                 (photo, latitude, longitude, address, description, status,
                  submitted_at or now(), updated_at, json.dumps(ai_result)))
-            return cur.lastrowid
+            report_id = cur.lastrowid
+            at = submitted_at or now()
+            self._log(conn, report_id, 'Report submitted by citizen via web form', at)
+            self._log(conn, report_id, self.describe_ai(ai_result), at)
+            if status != 'pending':
+                self._log(conn, report_id, STATUS_EVENTS[status], updated_at or at)
+            return report_id
 
     def set_status(self, report_id, status):
         """Returns True if the report existed and was updated."""
@@ -85,7 +132,20 @@ class ReportDB:
         with self._connect() as conn:
             cur = conn.execute('UPDATE reports SET status = ?, updated_at = ? WHERE id = ?',
                                (status, now(), report_id))
-            return cur.rowcount == 1
+            if cur.rowcount != 1:
+                return False
+            self._log(conn, report_id, STATUS_EVENTS[status])
+            return True
+
+    def set_ai_result(self, report_id, ai_result):
+        """Store a new CNN result (used by "Re-classify"). Returns True if the report exists."""
+        with self._connect() as conn:
+            cur = conn.execute('UPDATE reports SET ai_result = ?, updated_at = ? WHERE id = ?',
+                               (json.dumps(ai_result), now(), report_id))
+            if cur.rowcount != 1:
+                return False
+            self._log(conn, report_id, 'Re-classified — ' + self.describe_ai(ai_result))
+            return True
 
     def delete(self, report_id):
         """Deletes a report and returns it (so the caller can remove the photo), or None."""
@@ -93,6 +153,7 @@ class ReportDB:
         if report:
             with self._connect() as conn:
                 conn.execute('DELETE FROM reports WHERE id = ?', (report_id,))
+                conn.execute('DELETE FROM events WHERE report_id = ?', (report_id,))
         return report
 
     # ── One-time import of the old reports.json ───────────────────────────────

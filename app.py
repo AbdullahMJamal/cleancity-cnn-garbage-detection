@@ -21,6 +21,7 @@ import os
 import secrets
 import uuid
 from collections import Counter
+from datetime import datetime, timedelta
 from functools import wraps
 
 from flask import (Flask, abort, flash, jsonify, redirect, render_template,
@@ -40,15 +41,44 @@ MAX_DESCRIPTION    = 500
 CAMPUS = {
     'latitude':  '24.9200',
     'longitude': '67.0650',
-    'address':   'Sir Syed University Of Engineering & Technology',
+    'address':   'Sir Syed University of Engineering & Technology, Karachi',
+    'district':  'District East (Gulshan Town)',
 }
 
 STATUS_LABELS = {
-    'pending':     'Pending',
+    'pending':     'Pending triage',
     'in_progress': 'In progress',
-    'done':        'Done',
+    'done':        'Cleaned',
     'rejected':    'Rejected',
 }
+
+
+def time_ago(timestamp):
+    """'2026-10-02 11:06:00' → '12m ago' / '3h ago' / 'Yesterday' / '14 May'."""
+    try:
+        then = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
+    except (TypeError, ValueError):
+        return '—'
+    seconds = (datetime.now() - then).total_seconds()
+    if seconds < 60:
+        return 'just now'
+    if seconds < 3600:
+        return f'{int(seconds // 60)}m ago'
+    if seconds < 86400:
+        return f'{int(seconds // 3600)}h ago'
+    if seconds < 2 * 86400:
+        return 'Yesterday'
+    if seconds < 7 * 86400:
+        return f'{int(seconds // 86400)}d ago'
+    return then.strftime('%d %b %Y')
+
+
+def nice_time(timestamp):
+    """'2026-10-02 11:06:00' → '02 Oct 2026, 11:06'"""
+    try:
+        return datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S').strftime('%d %b %Y, %H:%M')
+    except (TypeError, ValueError):
+        return timestamp or '—'
 
 
 def allowed_file(filename):
@@ -138,7 +168,12 @@ def create_app(test_config=None):
 
     @app.context_processor
     def inject_helpers():
-        return {'csrf_token': csrf_token, 'status_labels': STATUS_LABELS}
+        return {'csrf_token': csrf_token, 'status_labels': STATUS_LABELS,
+                'logged_in': bool(session.get('team')), 'campus': CAMPUS,
+                'model_trained': app.config['MODEL_TRAINED'], 'model_info': load_model_info()}
+
+    app.jinja_env.filters['ago'] = time_ago
+    app.jinja_env.filters['nice_time'] = nice_time
 
     @app.before_request
     def check_csrf():
@@ -156,8 +191,7 @@ def create_app(test_config=None):
     # ── USER ROUTES ───────────────────────────────────────────────────────────
     @app.route('/')
     def user_home():
-        return render_template('user.html', campus=CAMPUS,
-                               model_trained=app.config['MODEL_TRAINED'])
+        return render_template('user.html')
 
     @app.route('/submit', methods=['POST'])
     def submit_report():
@@ -184,7 +218,10 @@ def create_app(test_config=None):
         report_id = db.add(filename, CAMPUS['latitude'], CAMPUS['longitude'], CAMPUS['address'],
                            description or 'No description', ai_result)
 
-        return jsonify({'success': True, 'report_id': report_id, 'ai_result': ai_result})
+        report = db.get(report_id)
+        return jsonify({'success': True, 'report_id': report_id, 'ai_result': ai_result,
+                        'submitted_at': nice_time(report['submitted_at']),
+                        'photo_url': url_for('static', filename='uploads/' + filename)})
 
     # ── TEAM ROUTES ───────────────────────────────────────────────────────────
     @app.route('/team/login', methods=['GET', 'POST'])
@@ -211,24 +248,37 @@ def create_app(test_config=None):
     @team_required
     def team_dashboard():
         reports = db.all()
+        events  = db.all_events()
+        for r in reports:
+            # Reports created before the audit trail existed get a basic history
+            r['events'] = events.get(r['id']) or [
+                {'at': r['submitted_at'], 'message': 'Report submitted by citizen via web form'},
+                {'at': r['submitted_at'], 'message': db.describe_ai(r['ai_result'])}]
+            r['ago'] = time_ago(r['submitted_at'])
+            r['photo_url'] = url_for('static', filename='uploads/' + r['photo'])
+
         status_counts = Counter(r['status'] for r in reports)
         type_counts = Counter(r['ai_result'].get('garbage_type', 'Unknown') for r in reports
                               if r['status'] != 'rejected')
-        high_danger = sum(1 for r in reports
-                          if r['ai_result'].get('danger_level') == 'High'
-                          and r['status'] in ('pending', 'in_progress'))
+        critical = sum(1 for r in reports
+                       if r['ai_result'].get('danger_level') == 'High' and r['status'] == 'pending')
+        day_ago = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')
+        last_24h = sum(1 for r in reports if r['submitted_at'] >= day_ago)
+        closed = status_counts['done'] + status_counts['rejected']
+        resolution_rate = round(status_counts['done'] / closed * 100, 1) if closed else None
 
         return render_template('team.html',
                                reports=reports,
                                total=len(reports),
+                               last_24h=last_24h,
                                pending=status_counts['pending'],
+                               critical=critical,
                                in_progress=status_counts['in_progress'],
                                done=status_counts['done'],
-                               high_danger=high_danger,
-                               type_counts=[(c, type_counts[c]) for c in GARBAGE_CLASSES + ['Unknown']
-                                            if type_counts[c]],
-                               model_trained=app.config['MODEL_TRAINED'],
-                               model_info=load_model_info())
+                               resolution_rate=resolution_rate,
+                               garbage_classes=GARBAGE_CLASSES + ['Unknown'],
+                               type_counts=type_counts,
+                               last_updated=datetime.now().strftime('%d %b %Y, %H:%M'))
 
     @app.route('/update_status', methods=['POST'])
     @team_required
@@ -240,7 +290,25 @@ def create_app(test_config=None):
         if not db.set_status(report_id, new_status):
             abort(404, 'Report not found')
         flash(f'Report #{report_id} marked as {STATUS_LABELS[new_status].lower()}.')
-        return redirect(url_for('team_dashboard'))
+        return redirect(url_for('team_dashboard', open=report_id))
+
+    @app.route('/reclassify', methods=['POST'])
+    @team_required
+    def reclassify():
+        """Run the CNN again on a stored photo (e.g. after retraining the model)."""
+        report_id = request.form.get('report_id', type=int)
+        report = db.get(report_id) if report_id is not None else None
+        if report is None:
+            abort(404, 'Report not found')
+        photo_path = os.path.join(app.config['UPLOAD_FOLDER'], os.path.basename(report['photo']))
+        if not os.path.exists(photo_path):
+            abort(404, 'Photo file is missing')
+        with open(photo_path, 'rb') as f:
+            ai_result = predict_garbage(f.read(), app.config['CNN_MODEL'])
+        db.set_ai_result(report_id, ai_result)
+        flash(f"Report #{report_id} re-classified: {ai_result['garbage_type']} "
+              f"({ai_result['confidence']}%).")
+        return redirect(url_for('team_dashboard', open=report_id))
 
     @app.route('/delete_report', methods=['POST'])
     @team_required
