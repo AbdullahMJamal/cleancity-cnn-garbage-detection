@@ -252,3 +252,4 @@ The same `Dockerfile` works on any Docker host: `docker build -t cleancity . && 
 ---
 
 Student project — Sir Syed University of Engineering & Technology, Karachi.
+# cleancity-cnn-garbage-detection
