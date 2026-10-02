@@ -6,7 +6,7 @@ __pycache__/
 *.pyc
 .pytest_cache/
 instance/
-static/uploads/*
+static/uploads/
 dataset/
 docs/
 tests/

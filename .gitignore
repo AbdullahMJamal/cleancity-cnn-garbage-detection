@@ -12,8 +12,7 @@ __pycache__/
 instance/
 reports.json
 reports.json.imported
-static/uploads/*
-!static/uploads/.gitkeep
+static/uploads/
 
 # Training data (download with scripts/prepare_dataset.py)
 dataset/
